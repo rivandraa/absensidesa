@@ -726,23 +726,42 @@ function forceUpdateDistanceUI(lat, lon, acc) {
     }
 
     // LOGIKA BARIS JARAK & STATUS
-    if (status === "Hadir" || status === "WFH") {
-        const hasTargetData = targetLocation && targetLocation.lat !== 0 && targetLocation.lat !== null;
+if (status === "Hadir" || status === "WFH") {
+    // ASUMSI: targetLocations (jamak) adalah array of objects 
+    // Contoh: [{lat: -8.1, lon: 115.1, nama: "Kantor 1"}, {lat: -8.2, lon: 115.2, nama: "Kantor 2"}]
+    
+    if (targetLocations && targetLocations.length > 0) {
+        let nearestDistance = Infinity;
+        let matchedLocation = null;
+        let isAnyInside = false;
 
-        if (hasTargetData) {
-            const distance = getDistanceFromLatLonInMeters(currentLat, currentLon, targetLocation.lat, targetLocation.lon);
-            const insideArea = distance <= RADIUS_LIMIT;
-            lastInsideArea = insideArea;
-
-            if (insideArea) {
-                // Tampilan jika di DALAM radius
-                displayText += `\n✅ Berada dalam area radius ${namaLokasi}`;
-            } else {
-                // Tampilan jika di LUAR radius (2 baris sesuai permintaanmu)
-                displayText += `\n❌ Di luar area ${namaLokasi}`;
-                displayText += `\n📏 Jarak ${distance.toFixed(0)} Meter (Max. ${RADIUS_LIMIT} Meter)`;
+        // Loop mengecek semua lokasi yang terdaftar di spreadsheet user tersebut
+        targetLocations.forEach(loc => {
+            const d = getDistanceFromLatLonInMeters(currentLat, currentLon, loc.lat, loc.lon);
+            
+            // Cek apakah user ada di dalam salah satu radius lokasi
+            if (d <= RADIUS_LIMIT) {
+                isAnyInside = true;
+                matchedLocation = loc.nama;
+                nearestDistance = d;
             }
-        } 
+
+            // Simpan jarak terdekat untuk ditampilkan jika di luar semua radius
+            if (d < nearestDistance) {
+                nearestDistance = d;
+                if(!isAnyInside) matchedLocation = loc.nama;
+            }
+        });
+
+        lastInsideArea = isAnyInside;
+
+        if (isAnyInside) {
+            displayText += `\n✅ Berada dalam area radius ${matchedLocation}`;
+        } else {
+            displayText += `\n❌ Di luar area Absensi`;
+            displayText += `\n📏 Jarak terdekat: ${nearestDistance.toFixed(0)} Meter ke ${matchedLocation}`;
+        }
+    }
         else if (namaLokasi !== "-") {
             displayText += `\nMenghitung jarak ke lokasi baru...`;
             lastInsideArea = false;
