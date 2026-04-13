@@ -1345,7 +1345,7 @@ document.getElementById('snap').addEventListener('click', async () => {
             const finalBoxWidth = Math.min(dynamicWidth, canvas.width);
     
             // BACKGROUND DINAMIS
-            const padding = 15;
+            const padding = 10;
             const boxTop = currentY - totalHeight - padding;
             const boxBottom = currentY + padding;
             const boxHeight = totalHeight + padding * 2;
@@ -1564,25 +1564,24 @@ async function submitAbsensiForm() {
         }
     }
 
-    // 📏 Validasi Radius (BAGIAN YANG DIPERBAIKI)
-    if (status === "hadir" || status === "wfh") {
-        if (!targetLocation) {
-            showPopup("⚠️ Koordinat kantor belum dimuat. Tunggu sebentar atau pilih ulang status.", "warning");
-            isSubmitting = false;
-            return;
-        }
-
-        const [lat, lon] = gpsFinal;
-        const distance = getDistanceFromLatLonInMeters(lat, lon, targetLocation.lat, targetLocation.lon);
-        const insideArea = distance <= RADIUS_LIMIT;
-
-        if (!insideArea) {
-            showPopup(`⚠️ Anda berada di luar area absensi!<br>Jarak: ${distance.toFixed(0)}m (Max: ${RADIUS_LIMIT}m)`, "error");
-            vibrateAlertShort();
-            isSubmitting = false;
-            return;
-        }
-    }
+	// 📏 Validasi Radius (Opsional)
+	if (status === "hadir" || status === "wfh") {
+	    
+	    if (targetLocation && targetLocation.lat && targetLocation.lon) {
+	        
+	        const [lat, lon] = gpsFinal;
+	        const distance = getDistanceFromLatLonInMeters(lat, lon, targetLocation.lat, targetLocation.lon);
+	        const insideArea = distance <= RADIUS_LIMIT;
+	
+	        if (!insideArea) {
+	            showPopup(`⚠️ Anda berada di luar area " + statusRaw + "!"<br>Jarak: ${distance.toFixed(0)} Meter (Max: ${RADIUS_LIMIT} Meter)`, "error");
+	            vibrateAlertShort();
+	            isSubmitting = false; 
+	            return;
+	        }
+	
+	    }
+	}
 
     // ======================================
     // PERSIAPAN DATA UNTUK DIKIRIM
@@ -1622,35 +1621,87 @@ async function submitAbsensiForm() {
         document.getElementById('reset').disabled = false;
         isSubmitting = false;
 
-        if (res.status === "berhasil") {
-            const waktuID = formatIndonesia(res.waktu);
-            showPopup(
-                `✅ Absensi berhasil!<br>Nama: <b>${res.nama}</b><br>Waktu: <b>${waktuID}</b>`,
-                "success", 6000
-            );
-            vibrateAlertLong();
-            
-            // Reset Form
-            $('#status').val('');
-            $('#keterangan').val('');
-            fotoData = null;
-            resetFoto();
-
-        } else if (res.status === "sudah_absen") {
-            const waktuID = formatIndonesia(res.waktu);
-            showPopup(`⚠️ Anda sudah absen hari ini!<br>Waktu: <b>${waktuID}</b>`, "warning", 6000);
-            vibrateAlertLong();
-        } else {
-            throw new Error(res.message || "Gagal menyimpan");
-        }
-
-    } catch (err) {
-        document.getElementById('snap').disabled = false;
-        document.getElementById('reset').disabled = false;
-        isSubmitting = false;
-        showPopup("⚠️ Gagal mengirim: " + err.message, "error");
-        vibrateAlertLong();
-    }
+		if (res.status === "berhasil") {
+		    const waktuID = formatIndonesia(res.waktu);
+		    let pesan = "";
+		
+		    if (status === "Hadir") {
+		        pesan = `✅ Absensi Kehadiran Berhasil<br>
+		        Pegawai: <b>${res.nama}</b><br>
+		        🕒 Waktu: <b>${waktuID}</b><br>
+		        Terima kasih, selamat menjalankan tugas.`;
+		    } 
+		    
+		    else if (status === "WFH") {
+		        pesan = `✅ Absensi WFH Berhasil<br>
+		        Pegawai: <b>${res.nama}</b><br>
+		        🕒 Waktu: <b>${waktuID}</b><br>
+		        Tetap semangat bekerja dari rumah.`;
+		    } 
+		    
+		    else if (status === "Izin") {
+		        pesan = `✅ Pengajuan Izin Berhasil<br>
+		        Pegawai: <b>${res.nama}</b><br>
+		        🕒 Waktu: <b>${waktuID}</b><br>
+		        Permohonan izin telah dicatat.`;
+		    } 
+		    
+		    else if (status === "Sakit") {
+		        pesan = `✅ Laporan Sakit Berhasil<br>
+		        Pegawai: <b>${res.nama}</b><br>
+		        🕒 Waktu: <b>${waktuID}</b><br>
+		        Semoga lekas pulih.`;
+		    }
+				
+			else if (status === "Dinas") {
+		    pesan = `✅ Absensi Dinas Berhasil<br>
+		    Pegawai: <b>${res.nama}</b><br>
+		    🕒 Waktu: <b>${waktuID}</b><br>
+		    Selamat menjalankan tugas dinas.`;
+			}
+		    
+		    else {
+		        // fallback kalau status tidak terdeteksi
+		        pesan = `✅ Absensi berhasil!<br>
+		        Pegawai: <b>${res.nama}</b><br>
+		        🕒 Waktu: <b>${waktuID}</b>`;
+		    }
+		
+		    showPopup(pesan, "success", 6000);
+		    vibrateAlertLong();
+		    
+		    // Reset Form
+		    $('#status').val('');
+		    $('#keterangan').val('');
+		    fotoData = null;
+		    resetFoto();
+		
+		} else if (res.status === "sudah_absen") {
+		    const waktuID = formatIndonesia(res.waktu);
+		    showPopup(
+		        `⚠️ Absensi sudah tercatat hari ini<br>
+		        🕒 Waktu terakhir: <b>${waktuID}</b>`,
+		        "warning", 6000
+		    );
+		    vibrateAlertLong();
+		
+		} else {
+		    throw new Error(res.message || "Gagal menyimpan");
+		}
+		
+		} catch (err) {
+		    document.getElementById('snap').disabled = false;
+		    document.getElementById('reset').disabled = false;
+		    isSubmitting = false;
+		
+		    showPopup(
+		        `❌ Terjadi kesalahan saat mengirim data<br>
+		        <small>${err.message}</small>`,
+		        "error"
+		    );
+		    
+		    vibrateAlertLong();
+		}
 }
 
 // =========================================================================================================
