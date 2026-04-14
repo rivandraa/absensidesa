@@ -1497,6 +1497,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Submit Absensi
 // ================================
 let isSubmitting = false;
+let isCalculatingDistance = false;
 	
 async function submitAbsensiForm() {
     if (typeof hideAlerts === "function") hideAlerts();
@@ -1553,7 +1554,7 @@ async function submitAbsensiForm() {
     // 🔥 SATU SUMBER GPS
     const gpsFinal = fotoData?.gps || gpsData;
 
-// 📍 Validasi GPS
+	// 📍 Validasi GPS
     const gpsWajib = !["izin", "sakit"].includes(status);
     if (gpsWajib) {
         if (!gpsFinal || (gpsFinal[0] === 0 && gpsFinal[1] === 0)) {
@@ -1563,6 +1564,24 @@ async function submitAbsensiForm() {
             return;
         }
     }
+
+	//  VALIDASI GPS & RADIUS
+	if ((gpsData[0] === 0 && gpsData[1] === 0) || animatingGPS || improvingAccuracy) {
+		showPopup("⚠️ GPS tidak aktif atau GPS sedang mencari lokasi / meningkatkan akurasi.", "warning");
+    	vibrateAlertShort();
+    	isSubmitting = false;
+    	return;
+  	}
+
+	// 📏 Validasi Radius (DIPERBAIKI: Menjadi Opsional)
+ 	if (status === "hadir" || status === "wfh") {
+    	if (isFetchingLocation || isCalculatingDistance) {
+        	showPopup("⚠️ Mohon tunggu, sedang mengecek koordinat...", "warning");
+        	vibrateAlertShort();
+        	isSubmitting = false;
+        	return;
+		}
+ 	}
 
 	// 📏 Validasi Radius (Opsional)
 	if (status === "hadir" || status === "wfh") {
