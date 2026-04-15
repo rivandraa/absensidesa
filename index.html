@@ -1218,7 +1218,8 @@ document.getElementById('snap').addEventListener('click', async () => {
   	}
 
 	// 📏 Validasi Radius & Kesiapan Data
-	if (status === "hadir" || status === "wfh") {
+	const statusLower = status.toLowerCase();
+	if (statusLower === "hadir" || statusLower === "wfh" || statusLower === "wan") {
 	    
 	    // 1. Ambil Nama Lokasi
 	    const elNama = document.getElementById("titikKoordinatTampil");
