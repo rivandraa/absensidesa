@@ -690,17 +690,23 @@ function updateGPSDisplay(text) {
 
 function startGPSLoading() {
     animatingGPS = true;
-    let dots = 0;
+
+    const dotsArr = ["", ".", "..", "..."];
+    let i = 0;
+
     stopGPSLoading();
+
     gpsLoadingInterval = setInterval(() => {
-        dots = (dots + 1) % 4;
-        updateGPSDisplay("Sedang mencari lokasi" + ".".repeat(dots));
-    }, 500);
+        updateGPSDisplay("Sedang mencari lokasi" + dotsArr[i]);
+        i = (i + 1) % dotsArr.length;
+    }, 600);
 }
 
 function stopGPSLoading() {
-    if (gpsLoadingInterval) clearInterval(gpsLoadingInterval);
-    gpsLoadingInterval = null;
+    if (gpsLoadingInterval) {
+        clearInterval(gpsLoadingInterval);
+        gpsLoadingInterval = null;
+    }
     animatingGPS = false;
 }
 
@@ -778,34 +784,12 @@ async function refreshTargetLocation(callback, isSilent = false) {
     const tampil = document.getElementById("titikKoordinatTampil");
     const hidden = document.getElementById("titikKoordinat");
 
-    // =========================================================
-    // LOGIKA ANTI-KEDIP (Hanya reset jika BUKAN dari interval)
-    // =========================================================
-	function startLoadingText(element) {
-	    let dots = 0;
-	    // Bersihkan interval lama jika masih jalan
-	    if (loadingInterval) clearInterval(loadingInterval);
-	    
-	    loadingInterval = setInterval(() => {
-	        dots = (dots + 1) % 4; // Berputar dari 0 sampai 3
-	        element.value = "Sedang update koordinat" + ".".repeat(dots);
-	    }, 500); // Update setiap 0.5 detik
+	// 1. CEK STATUS DULU (Prioritas Utama)
+	if (!currentStatus || currentStatus === "Pilih Status..." || currentStatus === "") {
+	    if (tampil) tampil.value = "⚠️ Status Absen belum dipilih.";
+		isLoading = false;
+	    return; 
 	}
-	
-	// Gunakan di dalam kode Anda
-	if (!isSilent) {
-	    targetLocation = null; 
-	    if (tampil) {
-	        startLoadingText(tampil); // Jalankan animasi loading
-	    }
-	    if (hidden) hidden.value = "";
-	}
-    // =========================================================
-
-    if (!currentStatus || currentStatus === "Pilih Status...") {
-        if (tampil) tampil.value = "⚠️ Status Absen belum dipilih.";
-        return;
-    }
     
     // Jika status non-lokasi, langsung set dan berhenti
     if (["Dinas", "Izin", "Sakit"].includes(currentStatus)) {
@@ -813,6 +797,7 @@ async function refreshTargetLocation(callback, isSilent = false) {
         if (hidden) hidden.value = "-";
         targetLocation = null;
         lastTargetLocation = null;
+		isLoading = false;
         return; 
     }
 
@@ -848,6 +833,7 @@ async function refreshTargetLocation(callback, isSilent = false) {
         console.error("Gagal refresh:", error);
     } finally {
         isFetchingLocation = false;
+		isLoading = false;
         if (typeof callback === "function") callback();
     }
 }
@@ -998,32 +984,45 @@ function startGPSMonitoring(onReady) {
 }
 
     // ====== EVENT LISTENER STATUS ======
+let isLoading = false; // Gembok global
+
+function updateLoadingDots(count) {
+    if (!isLoading) return; 
+
+    const elNama = document.getElementById("titikKoordinatTampil");
+    if (elNama) {
+        // Menggunakan array untuk menghindari kalkulasi berat saat UI sibuk
+        const dots = ["", ".", "..", "..."];
+        elNama.value = "Sedang update koordinat" + dots[count % 4];
+    }
+
+    // Gunakan 600ms agar ritme sinkron dengan mata manusia
+    setTimeout(() => updateLoadingDots(count + 1), 600);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const statusEl = document.getElementById("status");
     const restartBtn = document.getElementById("restartGPS");
 
 	if (statusEl) {
-	    statusEl.addEventListener("change", () => {
-	        // Kosongkan koordinat target lama agar 'hasTargetData' jadi false
-	        // Ini akan membuat baris status ✅/❌ hilang seketika saat UI di-update
-	        targetLocation = null;
-	        lastInsideArea = false; 
-			
-			// 1. Ambil elemen nama lokasi
-	        const elNama = document.getElementById("titikKoordinatTampil");
-	
-	        // 2. RESET DATA SECARA PAKSA (Kunci utama agar teks lama hilang)
-	        if (elNama) {
-	            elNama.value = "Sedang update koordinat..."; 
-	        }
-	        
-	        // 3. Paksa update tampilan UI saat ini juga
-	        // Karena targetLocation sudah 0, baris ✅/❌ pasti hilang
-	        forceUpdateDistanceUI();    
-	        
-	        // 4. Baru jalankan proses ambil data baru dari server
-	        refreshTargetLocation(null, false);
-	    });
+		statusEl.addEventListener("change", () => {
+		    // A. RESET DATA & AKTIFKAN GEMBOK
+		    targetLocation = null;
+		    lastInsideArea = false;
+		    isLoading = true; // GEMBOK DIKUNCI
+		
+		    // B. JALANKAN ANIMASI DOTS
+		    // Titik-titik mulai berjalan secara otomatis di background
+		    updateLoadingDots(0);
+		
+		    // C. UPDATE UI SEKETIKA
+		    // Menghilangkan status ✅/❌ karena targetLocation sekarang null
+		    forceUpdateDistanceUI();    
+		    
+		    // D. AMBIL DATA DARI SERVER
+		    // Memanggil Google Spreadsheet untuk mencari koordinat baru
+		    refreshTargetLocation(null, false);
+		});
 	}
     
     // === restart gps ===
@@ -1031,15 +1030,17 @@ document.addEventListener("DOMContentLoaded", () => {
 	    restartBtn.addEventListener("click", () => {
 	        gpsSystemActive = false;
 	        stopGPSMonitoring();
-	
+			
+			isLoading = true; // GEMBOK DIKUNCI
+			updateLoadingDots(0);
+			
 	        restartBtn.innerHTML = "⏳ Restarting GPS";
 	        restartBtn.disabled = true;
-	
 	        startGPS(() => {
 	            restartBtn.innerHTML = "🔄 Restart GPS";
 	            restartBtn.disabled = false;
-	        });
-	    });
+			});
+		});
 	}
 });
 	
