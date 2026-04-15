@@ -1213,7 +1213,7 @@ document.getElementById('snap').addEventListener('click', async () => {
 	if ((gpsData[0] === 0 && gpsData[1] === 0) || animatingGPS || improvingAccuracy) {
 		showPopup("⚠️ GPS tidak aktif atau GPS sedang mencari lokasi / meningkatkan akurasi.", "warning");
     	vibrateAlertShort();
-    	isSubmitting = false;
+    	isSnapping = false;
     	return;
   	}
 
@@ -1234,7 +1234,7 @@ document.getElementById('snap').addEventListener('click', async () => {
 			if (!lat || lat === 0 || !lon || lon === 0) {
 			    showPopup("⚠️ Koordinat GPS belum siap. Mohon tunggu.", "warning");
 			    vibrateAlertShort();
-			    isSubmitting = false;
+			    isSnapping = false;
 			    return;
 			}
 	
@@ -1243,7 +1243,7 @@ document.getElementById('snap').addEventListener('click', async () => {
 	        if (!hasTargetData) {
 	            showPopup("⚠️ Data lokasi tujuan belum tersedia.", "warning");
 				vibrateAlertShort();
-	            isSubmitting = false;
+	            isSnapping = false;
 	            return;
 	        }
 	
@@ -1254,7 +1254,7 @@ document.getElementById('snap').addEventListener('click', async () => {
 	        if (!insideArea) {
 	            showPopup(`❌ Di luar area ${namaLokasi}!<br>Jarak: ${distance.toFixed(0)}m (Maks: ${RADIUS_LIMIT}m)`, "danger");
 	            vibrateAlertShort();
-	            isSubmitting = false;
+	            isSnapping = false;
 	            return;
 	        }
 	    } 
