@@ -380,6 +380,23 @@ textarea::placeholder {
   font-family: inherit;
 }
 
+/* ============================
+   ANIMASI DOT/TITIK
+============================ */
+/* Animasi halus untuk memberi tanda loading */
+@keyframes pulseLoading {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
+}
+
+.loading-style {
+    animation: pulseLoading 1.5s infinite ease-in-out;
+    background-color: #f0f0f0 !important; /* Warna tanda sedang loading */
+    color: #888 !important;
+    font-style: italic;
+}
+
 /* =========================================================================================================
     CSS LAPORAN ABSENSI
     Fungsinya:
