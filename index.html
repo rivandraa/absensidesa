@@ -1208,19 +1208,6 @@ document.getElementById('snap').addEventListener('click', async () => {
     return;
   }
 
-	// 🔥 TENTUKAN SUMBER GPS
-    const gpsFinal = fotoData?.gps || gpsData;
-
-	// 📍 Validasi GPS
-    const gpsWajib = !["izin", "sakit"].includes(status);
-    if (gpsWajib) {
-        if (!gpsFinal || (gpsFinal[0] === 0 && gpsFinal[1] === 0)) {
-            showPopup("GPS belum aktif atau tidak valid.", "error");
-            vibrateAlertShort();
-            isSubmitting = false;
-            return;
-        }
-    }
 
 	//  VALIDASI GPS & RADIUS
 	if ((gpsData[0] === 0 && gpsData[1] === 0) || animatingGPS || improvingAccuracy) {
@@ -1237,17 +1224,19 @@ document.getElementById('snap').addEventListener('click', async () => {
 	    const elNama = document.getElementById("titikKoordinatTampil");
 	    const namaLokasi = (elNama && elNama.value) ? elNama.value : "-";
 	
-	    // 2. Jika lokasi ditentukan (bukan "-"), lakukan validasi ketat
-	    if (namaLokasi !== "-" && namaLokasi !== "") {
-	        
-	        // Cek apakah koordinat GPS sudah ada
-	        const [lat, lon] = gpsFinal; // Menggunakan gpsFinal sesuai kode Anda
-	        if (!lat || lat === 0) {
-	            showPopup("⚠️ Koordinat GPS belum siap. Mohon tunggu.", "warning");
-				vibrateAlertShort();
-	            isSubmitting = false;
-	            return;
-	        }
+		    // 2. Jika lokasi ditentukan (bukan "-"), lakukan validasi ketat
+		    if (namaLokasi !== "-" && namaLokasi !== "") {
+		        
+			const lat = gpsData[0];
+			const lon = gpsData[1];
+			
+			// 2. Cek apakah koordinat GPS sudah ada/valid
+			if (!lat || lat === 0 || !lon || lon === 0) {
+			    showPopup("⚠️ Koordinat GPS belum siap. Mohon tunggu.", "warning");
+			    vibrateAlertShort();
+			    isSubmitting = false;
+			    return;
+			}
 	
 	        // Cek apakah data target lokasi sudah dimuat
 	        const hasTargetData = targetLocation && targetLocation.lat && targetLocation.lat !== 0;
