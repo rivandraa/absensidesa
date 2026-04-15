@@ -203,7 +203,7 @@ body.locked {
 
         <!-- Kamera -->
         <div class="form-group mb-3">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div id="dokumentasi" style="display:flex; justify-content:space-between; align-items:center;">
                 <label style="margin:0;">📸 Dokumentasi</label>
                 <button type="button" id="restartCamera" class="btn-gps">
                     📷 Start/Restart Kamera
@@ -1058,10 +1058,11 @@ function stopWebcam() {
 
 async function startWebcam() {
 	if (!useCamera) {
-        $('#cameraContainer').hide(); // Sembunyikan kontainer kamera jika ada
-		$('#restartCamera').hide(); // Sembunyikan kontainer kamera jika ada
-		$('#reset').hide(); // Sembunyikan kontainer kamera jika ada
-		$('#snap').hide(); // Sembunyikan kontainer kamera jika ada
+        $('#cameraContainer').hide(); // Sembunyikan kontainer kamera
+		$('#dokumentasi').hide(); // Sembunyikan tulisan dokumentasi kamera
+		$('#restartCamera').hide(); // Sembunyikan kontainer kamera
+		$('#reset').hide(); // Sembunyikan kontainer kamera
+		$('#snap').hide(); // Sembunyikan kontainer kamera
         return; 
     }
 	
