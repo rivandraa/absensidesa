@@ -595,6 +595,11 @@ async function isGPSEnabledUniversal() {
 }
 
 // =====================================================
+// Disable / Enable Kamera
+// =====================================================
+const useCamera = false;
+
+// =====================================================
 // GPS STATE
 // =====================================================
 let gpsWatcherId = null;
@@ -1052,6 +1057,14 @@ function stopWebcam() {
 }
 
 async function startWebcam() {
+	if (!useCamera) {
+        $('#cameraContainer').hide(); // Sembunyikan kontainer kamera jika ada
+		$('#restartCamera').hide(); // Sembunyikan kontainer kamera jika ada
+		$('#reset').hide(); // Sembunyikan kontainer kamera jika ada
+		$('#snap').hide(); // Sembunyikan kontainer kamera jika ada
+        return; 
+    }
+	
   if (isStarting) return;
   isStarting = true;
 
@@ -1585,7 +1598,7 @@ async function submitAbsensiForm() {
 
     // 📸 Validasi Foto
     const wajibFoto = ["hadir", "dinas", "wfh"].includes(status);
-    if (wajibFoto && !fotoData) {
+    if (useCamera && wajibFoto && !fotoData) {
         showPopup("Foto Kehadiran wajib untuk status " + statusRaw + "!", "warning");
         vibrateAlertShort();
         isSubmitting = false;
@@ -1626,7 +1639,7 @@ async function submitAbsensiForm() {
 	        
 	        // Cek apakah koordinat GPS sudah ada
 	        const [lat, lon] = gpsFinal; // Menggunakan gpsFinal sesuai kode Anda
-	        if (!lat || lat === 0) {
+	        if (!useCamera && (!lat || lat === 0)) {
 	            showPopup("⚠️ Koordinat GPS belum siap. Mohon tunggu.", "warning");
 				vibrateAlertShort();
 	            isSubmitting = false;
@@ -1635,7 +1648,7 @@ async function submitAbsensiForm() {
 	
 	        // Cek apakah data target lokasi sudah dimuat
 	        const hasTargetData = targetLocation && targetLocation.lat && targetLocation.lat !== 0;
-	        if (!hasTargetData) {
+	        if (!useCamera && !hasTargetData) {
 	            showPopup("⚠️ Data lokasi tujuan belum tersedia.", "warning");
 				vibrateAlertShort();
 	            isSubmitting = false;
@@ -1646,7 +1659,7 @@ async function submitAbsensiForm() {
 	        const distance = getDistanceFromLatLonInMeters(lat, lon, targetLocation.lat, targetLocation.lon);
 	        const insideArea = distance <= RADIUS_LIMIT;
 	
-	        if (!insideArea) {
+	        if (!useCamera && !insideArea) {
 	            showPopup(`❌ Di luar area ${namaLokasi}!<br>Jarak: ${distance.toFixed(0)}m (Maks: ${RADIUS_LIMIT}m)`, "danger");
 	            vibrateAlertShort();
 	            isSubmitting = false;
