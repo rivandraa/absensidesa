@@ -164,7 +164,7 @@ body.locked {
         <!-- Titik Koordinat -->
         <div class="form-group mb-3">
             <label for="titikKoordinatTampil">📍 Titik Koordinat Absensi</label>
-            <input type="text" id="titikKoordinatTampil" class="form-control" value="Sedang mengambil data..." readonly>
+            <input type="text" id="titikKoordinatTampil" class="form-control" readonly>
             <input type="hidden" id="titikKoordinat">
         </div>
 
@@ -703,56 +703,56 @@ function stopGPSLoading() {
 // FUNGSI HITUNG INSTAN (ANTI-DELAY)
 // =====================================================
 function forceUpdateDistanceUI(lat, lon, acc) {
-    const statusInput = document.getElementById("status");
-    const status = statusInput ? statusInput.value : "";
-    
+    // 1. Ambil input secepat mungkin
+    const status = (document.getElementById("status")?.value || "").toLowerCase();
     const elNama = document.getElementById("titikKoordinatTampil");
-    const namaLokasi = (elNama && elNama.value) ? elNama.value : "Area Absensi";
+    const namaLokasi = elNama?.value || "Area Absensi";
 
     const currentLat = lat || gpsData[0];
     const currentLon = lon || gpsData[1];
 
-    if (currentLat === 0) return;
+    // Jika GPS belum aktif, jangan proses apa pun
+    if (!currentLat || currentLat === 0) return;
 
-    // Baris 1: Lokasi
+    // 2. Bangun teks dasar
     let displayText = `Lokasi Anda : ${currentLat.toFixed(6)},${currentLon.toFixed(6)}`;
-    
-    // Baris 2: Akurasi
     displayText += `\nTingkat Akurasi : ${acc.toFixed(0)} Meter | > ${MAX_ACCURACY} Meter`;
 
-    // Baris Tambahan (Opsional): Animasi Akurasi
-    if (acc && acc > MAX_ACCURACY) {
-        displayText += `\nSedang meningkatkan akurasi${".".repeat(accDots)}`;
-    }
-
-    // LOGIKA BARIS JARAK & STATUS
-    if (status === "Hadir" || status === "WFH") {
-        const hasTargetData = targetLocation && targetLocation.lat !== 0 && targetLocation.lat !== null;
-
-        if (hasTargetData) {
-            const distance = getDistanceFromLatLonInMeters(currentLat, currentLon, targetLocation.lat, targetLocation.lon);
-            const insideArea = distance <= RADIUS_LIMIT;
-            lastInsideArea = insideArea;
-
-            if (insideArea) {
-                // Tampilan jika di DALAM radius
-                displayText += `\n✅ Berada dalam area radius ${namaLokasi}`;
-            } else {
-                // Tampilan jika di LUAR radius (2 baris sesuai permintaanmu)
-                displayText += `\n❌ Di luar area ${namaLokasi}`;
-                displayText += `\n📏 Jarak ${distance.toFixed(0)} Meter (Max. ${RADIUS_LIMIT} Meter)`;
-            }
-        } 
-        else if (namaLokasi !== "-") {
-            displayText += `\nSedang menghitung jarak anda dengan titik koordinat absensi`;
-            lastInsideArea = false;
+    // 3. Logika Prioritas Tinggi (Status Absensi)
+    if (status === "hadir" || status === "wan") {
+        
+        // JIKA LOKASI BEBAS: Langsung keluar dari fungsi (Sangat Cepat)
+        if (namaLokasi === "-") {
+            lastInsideArea = true;
+            updateGPSDisplay(displayText);
+            return; 
         }
-        // Jika data benar-benar kosong, baris ketiga tidak akan muncul sama sekali
+
+        // JIKA DATA TARGET BELUM ADA: Tampilkan loading dan langsung berhenti di sini
+        const hasTargetData = targetLocation && targetLocation.lat && targetLocation.lat !== 0;
+        
+        if (!hasTargetData) {
+            lastInsideArea = false;
+            displayText += `\nSedang menghitung jarak anda dengan titik koordinat absensi`;
+            updateGPSDisplay(displayText);
+            return; // Berhenti di sini agar tidak memproses kode di bawahnya
+        }
+
+        // JIKA DATA SUDAH FIX: Hitung jarak
+        const distance = getDistanceFromLatLonInMeters(currentLat, currentLon, targetLocation.lat, targetLocation.lon);
+        lastInsideArea = distance <= RADIUS_LIMIT;
+
+        if (lastInsideArea) {
+            displayText += `\n✅ Berada dalam area radius ${namaLokasi}`;
+        } else {
+            displayText += `\n❌ Di luar area ${namaLokasi}`;
+            displayText += `\n📏 Jarak ${distance.toFixed(0)} Meter (Max. ${RADIUS_LIMIT} Meter)`;
+        }
     } else {
-        displayText += ``;
         lastInsideArea = true;
     }
 
+    // 4. Update UI
     updateGPSDisplay(displayText);
 }
 
@@ -982,17 +982,33 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusEl = document.getElementById("status");
     const restartBtn = document.getElementById("restartGPS");
 
-    if (statusEl) {
-        statusEl.addEventListener("change", () => {
-            // 2. Refresh data target (untuk memproses tanda "-" atau koordinat baru)
-            refreshTargetLocation(null, false);
-        });
-    }
+	if (statusEl) {
+	    statusEl.addEventListener("change", () => {
+	        // Kosongkan koordinat target lama agar 'hasTargetData' jadi false
+	        // Ini akan membuat baris status ✅/❌ hilang seketika saat UI di-update
+	        targetLocation = null;
+	        lastInsideArea = false; 
+			
+			// 1. Ambil elemen nama lokasi
+	        const elNama = document.getElementById("titikKoordinatTampil");
+	
+	        // 2. RESET DATA SECARA PAKSA (Kunci utama agar teks lama hilang)
+	        if (elNama) {
+	            elNama.value = "Sedang update koordinat..."; 
+	        }
+	        
+	        // 3. Paksa update tampilan UI saat ini juga
+	        // Karena targetLocation sudah 0, baris ✅/❌ pasti hilang
+	        forceUpdateDistanceUI();    
+	        
+	        // 4. Baru jalankan proses ambil data baru dari server
+	        refreshTargetLocation(null, false);
+	    });
+	}
     
     // === restart gps ===
 	if (restartBtn) {
 	    restartBtn.addEventListener("click", () => {
-	        isManualRestarting = true; // Tandai: Ini aksi manual!
 	        gpsSystemActive = false;
 	        stopGPSMonitoring();
 	
@@ -1192,33 +1208,69 @@ document.getElementById('snap').addEventListener('click', async () => {
     return;
   }
 
-  //  VALIDASI GPS & RADIUS
-  if ((gpsData[0] === 0 && gpsData[1] === 0) || animatingGPS || improvingAccuracy) {
-    showPopup("⚠️ GPS tidak aktif atau GPS sedang mencari lokasi / meningkatkan akurasi.", "warning");
-    vibrateAlertShort();
-    isSnapping = false;
-    return;
-  }
+	// 🔥 TENTUKAN SUMBER GPS
+    const gpsFinal = fotoData?.gps || gpsData;
 
-  if (status === "Hadir" || status === "WFH") {
-    if (koordinatValue === "Sedang mengambil data...") {
-        showPopup("⚠️ Menunggu koordinat absensi...", "warning");
-		vibrateAlertShort();
-		isSnapping = false;
-        return;
-    }
-    
-    // Mengganti checkUserLocation dengan logika getDistanceFromLatLonInMeters
-    if (targetLocation) {
-        const distance = getDistanceFromLatLonInMeters(gpsData[0], gpsData[1], targetLocation.lat, targetLocation.lon);
-        if (distance > RADIUS_LIMIT) {
-            showPopup(`❌ Di luar area! Jarak: ${distance.toFixed(0)}m`, "error");
-			vibrateAlertShort();
-			isSnapping = false;
+	// 📍 Validasi GPS
+    const gpsWajib = !["izin", "sakit"].includes(status);
+    if (gpsWajib) {
+        if (!gpsFinal || (gpsFinal[0] === 0 && gpsFinal[1] === 0)) {
+            showPopup("GPS belum aktif atau tidak valid.", "error");
+            vibrateAlertShort();
+            isSubmitting = false;
             return;
         }
     }
-  }
+
+	//  VALIDASI GPS & RADIUS
+	if ((gpsData[0] === 0 && gpsData[1] === 0) || animatingGPS || improvingAccuracy) {
+		showPopup("⚠️ GPS tidak aktif atau GPS sedang mencari lokasi / meningkatkan akurasi.", "warning");
+    	vibrateAlertShort();
+    	isSubmitting = false;
+    	return;
+  	}
+
+	// 📏 Validasi Radius & Kesiapan Data
+	if (status === "hadir" || status === "wan") {
+	    
+	    // 1. Ambil Nama Lokasi
+	    const elNama = document.getElementById("titikKoordinatTampil");
+	    const namaLokasi = (elNama && elNama.value) ? elNama.value : "-";
+	
+	    // 2. Jika lokasi ditentukan (bukan "-"), lakukan validasi ketat
+	    if (namaLokasi !== "-" && namaLokasi !== "") {
+	        
+	        // Cek apakah koordinat GPS sudah ada
+	        const [lat, lon] = gpsFinal; // Menggunakan gpsFinal sesuai kode Anda
+	        if (!lat || lat === 0) {
+	            showPopup("⚠️ Koordinat GPS belum siap. Mohon tunggu.", "warning");
+				vibrateAlertShort();
+	            isSubmitting = false;
+	            return;
+	        }
+	
+	        // Cek apakah data target lokasi sudah dimuat
+	        const hasTargetData = targetLocation && targetLocation.lat && targetLocation.lat !== 0;
+	        if (!hasTargetData) {
+	            showPopup("⚠️ Data lokasi tujuan belum tersedia.", "warning");
+				vibrateAlertShort();
+	            isSubmitting = false;
+	            return;
+	        }
+	
+	        // 3. Kalkulasi Ulang Jarak (Double Check saat Submit)
+	        const distance = getDistanceFromLatLonInMeters(lat, lon, targetLocation.lat, targetLocation.lon);
+	        const insideArea = distance <= RADIUS_LIMIT;
+	
+	        if (!insideArea) {
+	            showPopup(`❌ Di luar area ${namaLokasi}!<br>Jarak: ${distance.toFixed(0)}m (Maks: ${RADIUS_LIMIT}m)`, "danger");
+	            vibrateAlertShort();
+	            isSubmitting = false;
+	            return;
+	        }
+	    } 
+	    // Jika namaLokasi === "-", maka otomatis lolos ke proses submit berikutnya
+	}
 
   // 3. PROSES PENGAMBILAN GAMBAR
   showPopup("Mengambil foto...", "loading");
@@ -1497,7 +1549,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // Submit Absensi
 // ================================
 let isSubmitting = false;
-let isCalculatingDistance = false;
 	
 async function submitAbsensiForm() {
     if (typeof hideAlerts === "function") hideAlerts();
@@ -1551,7 +1602,7 @@ async function submitAbsensiForm() {
         return;
     }
 
-    // 🔥 SATU SUMBER GPS
+	// 🔥 TENTUKAN SUMBER GPS
     const gpsFinal = fotoData?.gps || gpsData;
 
 	// 📍 Validasi GPS
@@ -1573,33 +1624,46 @@ async function submitAbsensiForm() {
     	return;
   	}
 
-	// 📏 Validasi Radius (DIPERBAIKI: Menjadi Opsional)
- 	if (status === "hadir" || status === "wfh") {
-    	if (isFetchingLocation || isCalculatingDistance) {
-        	showPopup("⚠️ Mohon tunggu, sedang mengecek koordinat...", "warning");
-        	vibrateAlertShort();
-        	isSubmitting = false;
-        	return;
-		}
- 	}
-
-	// 📏 Validasi Radius (Opsional)
-	if (status === "hadir" || status === "wfh") {
+	// 📏 Validasi Radius & Kesiapan Data
+	if (status === "hadir" || status === "wan") {
 	    
-	    if (targetLocation && targetLocation.lat && targetLocation.lon) {
+	    // 1. Ambil Nama Lokasi
+	    const elNama = document.getElementById("titikKoordinatTampil");
+	    const namaLokasi = (elNama && elNama.value) ? elNama.value : "-";
+	
+	    // 2. Jika lokasi ditentukan (bukan "-"), lakukan validasi ketat
+	    if (namaLokasi !== "-" && namaLokasi !== "") {
 	        
-	        const [lat, lon] = gpsFinal;
+	        // Cek apakah koordinat GPS sudah ada
+	        const [lat, lon] = gpsFinal; // Menggunakan gpsFinal sesuai kode Anda
+	        if (!lat || lat === 0) {
+	            showPopup("⚠️ Koordinat GPS belum siap. Mohon tunggu.", "warning");
+				vibrateAlertShort();
+	            isSubmitting = false;
+	            return;
+	        }
+	
+	        // Cek apakah data target lokasi sudah dimuat
+	        const hasTargetData = targetLocation && targetLocation.lat && targetLocation.lat !== 0;
+	        if (!hasTargetData) {
+	            showPopup("⚠️ Data lokasi tujuan belum tersedia.", "warning");
+				vibrateAlertShort();
+	            isSubmitting = false;
+	            return;
+	        }
+	
+	        // 3. Kalkulasi Ulang Jarak (Double Check saat Submit)
 	        const distance = getDistanceFromLatLonInMeters(lat, lon, targetLocation.lat, targetLocation.lon);
 	        const insideArea = distance <= RADIUS_LIMIT;
 	
 	        if (!insideArea) {
-	            showPopup(`⚠️ Anda berada di luar area " + statusRaw + "!"<br>Jarak: ${distance.toFixed(0)} Meter (Max: ${RADIUS_LIMIT} Meter)`, "error");
+	            showPopup(`❌ Di luar area ${namaLokasi}!<br>Jarak: ${distance.toFixed(0)}m (Maks: ${RADIUS_LIMIT}m)`, "danger");
 	            vibrateAlertShort();
-	            isSubmitting = false; 
+	            isSubmitting = false;
 	            return;
 	        }
-	
-	    }
+	    } 
+	    // Jika namaLokasi === "-", maka otomatis lolos ke proses submit berikutnya
 	}
 
     // ======================================
