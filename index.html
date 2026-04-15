@@ -597,7 +597,7 @@ async function isGPSEnabledUniversal() {
 // =====================================================
 // Disable / Enable Kamera
 // =====================================================
-const useCamera = false;
+const useCamera = true;
 
 // =====================================================
 // GPS STATE
@@ -765,7 +765,8 @@ function forceUpdateDistanceUI(lat, lon, acc) {
 // REFRESH TARGET LOCATION
 // =====================================================
 let isFetchingLocation = false;
-
+let loadingInterval = null;
+	
 // Tambahkan parameter 'isSilent' untuk membedakan interval dan manual
 async function refreshTargetLocation(callback, isSilent = false) {
     const userObj = userData || JSON.parse(sessionStorage.getItem('userData'));
@@ -780,11 +781,25 @@ async function refreshTargetLocation(callback, isSilent = false) {
     // =========================================================
     // LOGIKA ANTI-KEDIP (Hanya reset jika BUKAN dari interval)
     // =========================================================
-    if (!isSilent) {
-        targetLocation = null; 
-        if (tampil) tampil.value = "Sedang mengambil data...";
-        if (hidden) hidden.value = "";
-    }
+	function startLoadingText(element) {
+	    let dots = 0;
+	    // Bersihkan interval lama jika masih jalan
+	    if (loadingInterval) clearInterval(loadingInterval);
+	    
+	    loadingInterval = setInterval(() => {
+	        dots = (dots + 1) % 4; // Berputar dari 0 sampai 3
+	        element.value = "Sedang update koordinat" + ".".repeat(dots);
+	    }, 500); // Update setiap 0.5 detik
+	}
+	
+	// Gunakan di dalam kode Anda
+	if (!isSilent) {
+	    targetLocation = null; 
+	    if (tampil) {
+	        startLoadingText(tampil); // Jalankan animasi loading
+	    }
+	    if (hidden) hidden.value = "";
+	}
     // =========================================================
 
     if (!currentStatus || currentStatus === "Pilih Status...") {
@@ -1522,7 +1537,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 2. Reset tampilan ke state "Loading"
             // Untuk Input menggunakan .value
-            if (inputKoordinat) inputKoordinat.value = "Sedang mengambil data...";
+            //if (inputKoordinat) inputKoordinat.value = "Sedang mengambil data...";
             
             // Untuk elemen display (div/span) menggunakan .innerText
             //if (displayGps) displayGps.innerText = "Sedang mencari lokasi...";
@@ -1902,7 +1917,7 @@ async function loadLaporan_Absensi() {
     const tbody = $("#InnerPage").find("#Laporan-Absensi-Table tbody");
     const thead = $("#InnerPage").find("#Laporan-Absensi-Table thead");
     
-    tbody.html('<tr><td colspan="8">Sedang mengambil data...</td></tr>');
+    tbody.html('<tr><td colspan="8">Sedang mengambil data laporan</td></tr>');
     showPopup("Mengambil data Laporan...", "loading");
 
     const spreadsheetId = userData && userData.spreadsheetId ? userData.spreadsheetId : null;
