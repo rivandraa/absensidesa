@@ -1973,7 +1973,10 @@ async function loadLaporan_Absensi() {
         // 🔥 Ganti google.script.run menjadi fetch GET
         const response = await fetch(`${GAS_URL}?action=getLaporan_Absensi&spreadsheetId=${spreadsheetId}`);
         const res = await response.json();
-
+		
+		// Cek kembali jika signal sudah dibatalkan sebelum render
+        if (signal.aborted) return;
+		
         if (res) {
             //showPopup("Data berhasil dimuat", "success", 1000);
             
