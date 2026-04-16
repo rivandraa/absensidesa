@@ -2033,9 +2033,12 @@ async function loadLaporan_Absensi() {
  */
 function closeLaporan_Absensi() {
 	isRequesting = false; // Kunci: Memberitahu loadLaporan untuk berhenti memproses data
+	isshowLaporan = false;
+    isLoadingLaporan = false;
 	// Hentikan proses fetch jika sedang berjalan
     if (laporanController) {
         laporanController.abort();
+		laporanController = null;
     }
 	
     sessionStorage.setItem('page', 'absen');
