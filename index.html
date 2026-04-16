@@ -702,7 +702,7 @@ function startGPSLoading() {
     stopGPSLoading();
 
     gpsLoadingInterval = setInterval(() => {
-        updateGPSDisplay("Sedang mencari lokasi" + dotsArr[i]);
+        updateGPSDisplay("Sedang memperbarui lokasi" + dotsArr[i]);
         i = (i + 1) % dotsArr.length;
     }, 600);
 }
