@@ -1921,11 +1921,12 @@ async function showLaporan_Absensi() {
         $('#InnerPage').html(html).show();
         $('#AbsensiPage').hide();
 
+        // Event Tombol Tutup
+		$("#InnerPage").off("click", "#homeBtn").on("click", "#homeBtn", closeLaporan_Absensi);
+
         // Load Data
         await loadLaporan_Absensi();
 
-        // Event Tombol Tutup
-		$("#InnerPage").off("click", "#homeBtn").on("click", "#homeBtn", closeLaporan_Absensi);
 	} catch (err) {
         showPopup("Gagal memuat laporan", "error");
     } finally {
@@ -1937,11 +1938,16 @@ async function showLaporan_Absensi() {
  * Ambil data dari GAS dan render ke tabel
  */
 let isLoadingLaporan = false;
+let laporanController; // Variabel untuk mengontrol pembatalan fetch
 
 async function loadLaporan_Absensi() {
     if (isLoadingLaporan) return;
     isLoadingLaporan = true;
-	
+
+	// Buat controller baru setiap kali load
+    laporanController = new AbortController();
+    const signal = laporanController.signal;
+
     const tbody = $("#InnerPage").find("#Laporan-Absensi-Table tbody");
     const thead = $("#InnerPage").find("#Laporan-Absensi-Table thead");
     
@@ -2007,10 +2013,13 @@ async function loadLaporan_Absensi() {
             tbody.html(tbodyHtml);
         }
     } catch (err) {
+		if (err.name === 'AbortError') {
+		} else {
         showPopup("Gagal mengambil data dari server", "error");
         tbody.html('<tr><td colspan="8">Koneksi bermasalah.</td></tr>');
-	    } finally {
-        isLoadingLaporan = false;
+		}
+	} finally {
+		isLoadingLaporan = false;
 	}
 }
 
@@ -2018,6 +2027,11 @@ async function loadLaporan_Absensi() {
  * Tutup halaman Laporan
  */
 function closeLaporan_Absensi() {
+	// Hentikan proses fetch jika sedang berjalan
+    if (laporanController) {
+        laporanController.abort();
+    }
+	
     sessionStorage.setItem('page', 'absen');
     $('#InnerPage').hide().html('');
     $('#AbsensiPage').show();
