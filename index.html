@@ -1862,6 +1862,7 @@ function formatIndonesia(waktuString) {
 // Fungsi Navigasi Laporan_Absensi
 // ================================
 let isshowLaporan = false;
+let abortLaporan = false;
 
 /**
  * Tampilkan halaman Laporan Absensi
@@ -1938,6 +1939,7 @@ async function showLaporan_Absensi() {
  * Ambil data dari GAS dan render ke tabel
  */
 async function loadLaporan_Absensi() {
+    abortLaporan = false;
     const tbody = $("#InnerPage").find("#Laporan-Absensi-Table tbody");
     const thead = $("#InnerPage").find("#Laporan-Absensi-Table thead");
     
@@ -2012,6 +2014,7 @@ async function loadLaporan_Absensi() {
  * Tutup halaman Laporan
  */
 function closeLaporan_Absensi() {
+    abortLaporan = true;
     sessionStorage.setItem('page', 'absen');
     $('#InnerPage').hide().html('');
     $('#AbsensiPage').show();
