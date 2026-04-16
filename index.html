@@ -1874,7 +1874,7 @@ async function showLaporan_Absensi() {
     isshowLaporan = true;
 	
     sessionStorage.setItem('page', 'Laporan_Absensi');
-    if (typeof resetFoto === "function") resetFoto();
+    //if (typeof resetFoto === "function") resetFoto();
 
     //showPopup("Memuat halaman Laporan Absensi...", "loading");
 
@@ -2075,7 +2075,7 @@ function openPengaturanPasswordForm() {
     isopenPengaturanPasswordForm = true;
 
     sessionStorage.setItem('page', 'Pengaturan_Password');
-    if (typeof resetFoto === "function") resetFoto();
+    //if (typeof resetFoto === "function") resetFoto();
 
     //showPopup("Memuat Pengaturan Password...", "loading");
 
@@ -2187,7 +2187,7 @@ async function submitPengaturanPassword() {
 
         if (res.status === "berhasil") {
             showPopup("✅ Password berhasil diubah!", "success", 3000);
-            setTimeout(closePengaturanPasswordForm, 2000);
+            //setTimeout(closePengaturanPasswordForm, 2000);
         } else if (res.status === "salah_lama") {
             showPopup("⚠️ Password lama salah!", "error");
             alertBox.html("Password lama yang Anda masukkan salah.").show();
