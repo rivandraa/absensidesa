@@ -1862,7 +1862,6 @@ function formatIndonesia(waktuString) {
 // Fungsi Navigasi Laporan_Absensi
 // ================================
 let isshowLaporan = false;
-let isRequesting = false; // Flag tambahan untuk kontrol manual
 
 /**
  * Tampilkan halaman Laporan Absensi
@@ -1873,7 +1872,6 @@ async function showLaporan_Absensi() {
         return;
     }
     isshowLaporan = true;
-	isRequesting = true; // Tandai proses dimulai
 	
     sessionStorage.setItem('page', 'Laporan_Absensi');
     if (typeof resetFoto === "function") resetFoto();
@@ -1940,15 +1938,10 @@ async function showLaporan_Absensi() {
  * Ambil data dari GAS dan render ke tabel
  */
 let isLoadingLaporan = false;
-let laporanController; // Variabel untuk mengontrol pembatalan fetch
 
 async function loadLaporan_Absensi() {
     if (isLoadingLaporan) return;
     isLoadingLaporan = true;
-
-	// Buat controller baru setiap kali load
-    laporanController = new AbortController();
-    const signal = laporanController.signal;
 
     const tbody = $("#InnerPage").find("#Laporan-Absensi-Table tbody");
     const thead = $("#InnerPage").find("#Laporan-Absensi-Table thead");
@@ -1975,9 +1968,6 @@ async function loadLaporan_Absensi() {
         // 🔥 Ganti google.script.run menjadi fetch GET
         const response = await fetch(`${GAS_URL}?action=getLaporan_Absensi&spreadsheetId=${spreadsheetId}`);
         const res = await response.json();
-		
-		// Cek kembali jika signal sudah dibatalkan sebelum render
-        if (!isRequesting || signal.aborted) return;
 		
         if (res) {
             //showPopup("Data berhasil dimuat", "success", 1000);
@@ -2018,11 +2008,8 @@ async function loadLaporan_Absensi() {
             tbody.html(tbodyHtml);
         }
     } catch (err) {
-		if (err.name === 'AbortError') {
-		} else {
         showPopup("Gagal mengambil data dari server", "error");
         tbody.html('<tr><td colspan="8">Koneksi bermasalah.</td></tr>');
-		}
 	} finally {
 		isLoadingLaporan = false;
 	}
@@ -2032,14 +2019,8 @@ async function loadLaporan_Absensi() {
  * Tutup halaman Laporan
  */
 function closeLaporan_Absensi() {
-	isRequesting = false; // Kunci: Memberitahu loadLaporan untuk berhenti memproses data
 	isshowLaporan = false;
     isLoadingLaporan = false;
-	// Hentikan proses fetch jika sedang berjalan
-    if (laporanController) {
-        laporanController.abort();
-		laporanController = null;
-    }
 	
     sessionStorage.setItem('page', 'absen');
     $('#InnerPage').hide().html('');
@@ -2052,7 +2033,7 @@ function closeLaporan_Absensi() {
     }
     
     // Restart GPS & Kamera
-    fotoData = null; 
+    //fotoData = null; 
     startGPS();
     resetFoto();
     startWebcam();
@@ -2234,7 +2215,7 @@ function closePengaturanPasswordForm() {
         $('#perangkatData').val(userData.nama + '|' + userData.jabatan);
 
         // Restart GPS & Kamera
-        fotoData = null; 
+        //fotoData = null; 
         startGPS();
         resetFoto();
         startWebcam();
