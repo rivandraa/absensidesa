@@ -1927,7 +1927,7 @@ async function showLaporan_Absensi() {
 		$("#InnerPage").off("click", "#homeBtn").on("click", "#homeBtn", closeLaporan_Absensi);
 
         // Load Data
-        await loadLaporan_Absensi();
+        loadLaporan_Absensi();
 
 	} catch (err) {
         showPopup("Gagal memuat laporan", "error");
