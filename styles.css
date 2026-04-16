@@ -381,20 +381,15 @@ textarea::placeholder {
 }
 
 /* ============================
-   ANIMASI DOT/TITIK
+   FOOTER
 ============================ */
-/* Animasi halus untuk memberi tanda loading */
-@keyframes pulseLoading {
-    0% { opacity: 1; }
-    50% { opacity: 0.4; }
-    100% { opacity: 1; }
-}
-
-.loading-style {
-    animation: pulseLoading 1.5s infinite ease-in-out;
-    background-color: #f0f0f0 !important; /* Warna tanda sedang loading */
-    color: #888 !important;
-    font-style: italic;
+.footer {
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    margin-top: 25px;
+    padding-top: 12px;
+    border-top: 2px solid #eee; /* 🔥 garis pemisah halus */
 }
 
 /* =========================================================================================================
@@ -628,5 +623,32 @@ CSS CONTAINER & KONTEN LAPORAN ABSENSI
         width: 100%;
     }
 }
+/test
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
 
+.day {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #eee;
+  text-align: center;
+  line-height: 40px;
+}
+
+.day.hadir {
+  background: #86efac;
+}
+
+.day.izin {
+  background: #fca5a5;
+}
+
+.day.selected {
+  background: #3b82f6;
+  color: white;
+}
 </style>
