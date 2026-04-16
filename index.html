@@ -1925,7 +1925,7 @@ async function showLaporan_Absensi() {
 		$("#InnerPage").off("click", "#homeBtn").on("click", "#homeBtn", closeLaporan_Absensi);
 
         // Load Data
-        loadLaporan_Absensi();
+        await loadLaporan_Absensi();
 
 	} catch (err) {
         showPopup("Gagal memuat laporan", "error");
@@ -2034,9 +2034,9 @@ function closeLaporan_Absensi() {
     
     // Restart GPS & Kamera
     //fotoData = null; 
-    startGPS();
-    resetFoto();
-    startWebcam();
+    //startGPS();
+    //resetFoto();
+    //startWebcam();
     $("#InnerPage").off("click", "#homeBtn");
 }
 
@@ -2216,9 +2216,9 @@ function closePengaturanPasswordForm() {
 
         // Restart GPS & Kamera
         //fotoData = null; 
-        startGPS();
-        resetFoto();
-        startWebcam();
+        //startGPS();
+        //resetFoto();
+        //startWebcam();
     }
 }
 
