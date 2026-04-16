@@ -1862,7 +1862,6 @@ function formatIndonesia(waktuString) {
 // Fungsi Navigasi Laporan_Absensi
 // ================================
 let isshowLaporan = false;
-let abortLaporan = false;
 
 /**
  * Tampilkan halaman Laporan Absensi
@@ -1926,13 +1925,8 @@ async function showLaporan_Absensi() {
         await loadLaporan_Absensi();
 
         // Event Tombol Tutup
-$(document)
-.off("click", "#homeBtn")
-.on("click", "#homeBtn", function () {
-    closeLaporan_Absensi();
-});
-
-    } catch (err) {
+		$("#InnerPage").off("click", "#homeBtn").on("click", "#homeBtn", closeLaporan_Absensi);
+	} catch (err) {
         showPopup("Gagal memuat laporan", "error");
     } finally {
         isshowLaporan = false;
@@ -1942,8 +1936,12 @@ $(document)
 /**
  * Ambil data dari GAS dan render ke tabel
  */
+let isLoadingLaporan = false;
+
 async function loadLaporan_Absensi() {
-    abortLaporan = false;
+    if (isLoadingLaporan) return;
+    isLoadingLaporan = true;
+	
     const tbody = $("#InnerPage").find("#Laporan-Absensi-Table tbody");
     const thead = $("#InnerPage").find("#Laporan-Absensi-Table thead");
     
@@ -2011,14 +2009,15 @@ async function loadLaporan_Absensi() {
     } catch (err) {
         showPopup("Gagal mengambil data dari server", "error");
         tbody.html('<tr><td colspan="8">Koneksi bermasalah.</td></tr>');
-    }
+	    } finally {
+        isLoadingLaporan = false;
+	}
 }
 
 /**
  * Tutup halaman Laporan
  */
 function closeLaporan_Absensi() {
-    abortLaporan = true;
     sessionStorage.setItem('page', 'absen');
     $('#InnerPage').hide().html('');
     $('#AbsensiPage').show();
