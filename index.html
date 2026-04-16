@@ -1862,6 +1862,7 @@ function formatIndonesia(waktuString) {
 // Fungsi Navigasi Laporan_Absensi
 // ================================
 let isshowLaporan = false;
+let isRequesting = false; // Flag tambahan untuk kontrol manual
 
 /**
  * Tampilkan halaman Laporan Absensi
@@ -1872,7 +1873,8 @@ async function showLaporan_Absensi() {
         return;
     }
     isshowLaporan = true;
-
+	isRequesting = true; // Tandai proses dimulai
+	
     sessionStorage.setItem('page', 'Laporan_Absensi');
     if (typeof resetFoto === "function") resetFoto();
 
@@ -1975,7 +1977,7 @@ async function loadLaporan_Absensi() {
         const res = await response.json();
 		
 		// Cek kembali jika signal sudah dibatalkan sebelum render
-        if (signal.aborted) return;
+        if (!isRequesting || signal.aborted) return;
 		
         if (res) {
             //showPopup("Data berhasil dimuat", "success", 1000);
@@ -2030,6 +2032,7 @@ async function loadLaporan_Absensi() {
  * Tutup halaman Laporan
  */
 function closeLaporan_Absensi() {
+	isRequesting = false; // Kunci: Memberitahu loadLaporan untuk berhenti memproses data
 	// Hentikan proses fetch jika sedang berjalan
     if (laporanController) {
         laporanController.abort();
