@@ -1926,7 +1926,11 @@ async function showLaporan_Absensi() {
         await loadLaporan_Absensi();
 
         // Event Tombol Tutup
-        $("#InnerPage").off("click", "#homeBtn").on("click", "#homeBtn", closeLaporan_Absensi);
+$(document)
+.off("click", "#homeBtn")
+.on("click", "#homeBtn", function () {
+    closeLaporan_Absensi();
+});
 
     } catch (err) {
         showPopup("Gagal memuat laporan", "error");
