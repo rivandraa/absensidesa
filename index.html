@@ -1876,7 +1876,7 @@ async function showLaporan_Absensi() {
     sessionStorage.setItem('page', 'Laporan_Absensi');
     if (typeof resetFoto === "function") resetFoto();
 
-    showPopup("Memuat halaman Laporan Absensi...", "loading");
+    //showPopup("Memuat halaman Laporan Absensi...", "loading");
 
     try {
         // Kerangka HTML Laporan (Sesuai aslinya, tapi dipindah ke sini)
@@ -1941,8 +1941,15 @@ async function loadLaporan_Absensi() {
     const tbody = $("#InnerPage").find("#Laporan-Absensi-Table tbody");
     const thead = $("#InnerPage").find("#Laporan-Absensi-Table thead");
     
-    tbody.html('<tr><td colspan="8">Sedang mengambil data laporan</td></tr>');
-    showPopup("Mengambil data Laporan...", "loading");
+    // TAMPILKAN LOADING DI DALAM BODY TABEL YANG SUDAH ADA
+    tbody.html(`
+        <tr>
+            <td colspan="7" class="p-4 text-muted">
+                <div class="spinner-border spinner-border-sm mb-1"></div><br>
+                ⏳ Sedang mengambil data Laporan Absensi
+            </td>
+        </tr>
+    `);
 
     const spreadsheetId = userData && userData.spreadsheetId ? userData.spreadsheetId : null;
 
@@ -2008,6 +2015,7 @@ function closeLaporan_Absensi() {
     sessionStorage.setItem('page', 'absen');
     $('#InnerPage').hide().html('');
     $('#AbsensiPage').show();
+	//showPopup("Kembali ke halaman absen.", "warning");
     
     if (userData && userData.nama) {
         $('#perangkatDisplay').val(userData.nama + ' | ' + userData.jabatan);
@@ -2059,7 +2067,7 @@ function openPengaturanPasswordForm() {
     sessionStorage.setItem('page', 'Pengaturan_Password');
     if (typeof resetFoto === "function") resetFoto();
 
-    showPopup("Memuat Pengaturan Password...", "loading");
+    //showPopup("Memuat Pengaturan Password...", "loading");
 
     // Kerangka HTML Form (Dipindah ke Frontend)
     const html = `
@@ -2190,7 +2198,7 @@ function closePengaturanPasswordForm() {
     sessionStorage.setItem('page', 'absen');
     $('#InnerPage').hide().html('');
     $('#AbsensiPage').show();
-    showPopup("Kembali ke halaman absen.", "warning");
+    //showPopup("Kembali ke halaman absen.", "warning");
 
     if (userData && userData.nama && userData.jabatan) {
         $('#perangkatDisplay').val(userData.nama + ' | ' + userData.jabatan);
