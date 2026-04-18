@@ -138,18 +138,18 @@ body.locked {
         </div>
 
         <!-- Status -->
-        <div class="form-group">
-            <label>📋 Status Absen</label>
-            <select id="status" class="form-control">
-                <option value="" disabled selected hidden>Pilih Status Absen</option>
-                <option value="Hadir">Hadir</option>
-				<option value="Pulang">Pulang</option>
-                <option value="Izin">Izin</option>
-                <option value="Sakit">Sakit</option>
-                <option value="Dinas">Dinas</option>
-                <option value="WFH" disabled hidden>WFH</option>
-            </select>
-        </div>
+<div class="form-group">
+    <label>📋 Status Absen</label>
+    <select id="status" class="form-control">
+        <option value="" disabled selected hidden>Pilih Status Absen</option>
+        <option value="Hadir" id="opt-hadir">Hadir</option>
+        <option value="Pulang" id="opt-pulang">Pulang</option>
+        <option value="Izin">Izin</option>
+        <option value="Sakit">Sakit</option>
+        <option value="Dinas">Dinas</option>
+        <option value="WFH" disabled hidden>WFH</option>
+    </select>
+</div>
 
         <!-- Keterangan -->
         <div class="form-group">
@@ -561,6 +561,33 @@ async function loginUser() {
     }
 }
 
+/* FUNGSI STATUS */
+function updateStatusOptions() {
+    const sekarang = new Date();
+    const jam = sekarang.getHours(); // Mengambil jam (0-23)
+    
+    const optHadir = document.getElementById('opt-hadir');
+    const optPulang = document.getElementById('opt-pulang');
+    const selectStatus = document.getElementById('status');
+
+    if (jam < 12) {
+        // JIKA SEBELUM JAM 12 SIANG
+        if (optHadir) optHadir.style.display = 'block';
+        if (optPulang) optPulang.style.display = 'none';
+    } else {
+        // JIKA JAM 12 SIANG ATAU LEBIH
+        if (optHadir) optHadir.style.display = 'none';
+        if (optPulang) optPulang.style.display = 'block';
+    }
+}
+
+// Jalankan fungsi saat halaman dimuat
+$(document).ready(function() {
+    updateStatusOptions();
+    
+    // Opsional: Cek setiap 1 menit jika user mendiamkan halaman di ambang jam 12
+    setInterval(updateStatusOptions, 60000); 
+});
 /* =========================================================================================================
     BAGIAN KODE GPS (DIV DISPLAY)
     Hanya menyesuaikan tampilan ke <div> + hidden input. Logika lain tetap dipertahankan.
