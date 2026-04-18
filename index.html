@@ -143,6 +143,7 @@ body.locked {
             <select id="status" class="form-control">
                 <option value="" disabled selected hidden>Pilih Status Absen</option>
                 <option value="Hadir">Hadir</option>
+				<option value="Pulang">Pulang</option>
                 <option value="Izin">Izin</option>
                 <option value="Sakit">Sakit</option>
                 <option value="Dinas">Dinas</option>
@@ -735,7 +736,7 @@ function forceUpdateDistanceUI(lat, lon, acc) {
     displayText += `\nTingkat Akurasi : ${acc.toFixed(0)} Meter | > ${MAX_ACCURACY} Meter`;
 
     // 3. Logika Prioritas Tinggi (Status Absensi)
-    if (status === "hadir" || status === "wfh") {
+    if (status === "hadir" || status === "pulang" || status === "wfh") {
         
         // JIKA LOKASI BEBAS: Langsung keluar dari fungsi (Sangat Cepat)
         if (namaLokasi === "-") {
@@ -1263,7 +1264,7 @@ document.getElementById('snap').addEventListener('click', async () => {
 
 	// 📏 Validasi Radius & Kesiapan Data
 	const statusLower = status.toLowerCase();
-	if (statusLower === "hadir" || statusLower === "wfh" || statusLower === "wfh") {
+	if (statusLower === "hadir" || statusLower === "wfh" || statusLower === "pulang") {
 	    
 	    // 1. Ambil Nama Lokasi
 	    const elNama = document.getElementById("titikKoordinatTampil");
@@ -1542,7 +1543,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 video.srcObject.getTracks().forEach(track => track.stop());
                 video.srcObject = null;
             }
-        } else if (status === "Hadir" || status === "Dinas" || status === "WFH") {
+        } else if (status === "Hadir" || status === "Dinas" || status === "WFH" || status === "Pulang") {
             // 1. Tampilkan kembali (Gunakan "" agar layout tetap rapi/sejajar kiri)
             koordinatSection.style.display = ""; 
             gpsSection.style.display = "";
@@ -1628,7 +1629,7 @@ async function submitAbsensiForm() {
     }
 
     // 📸 Validasi Foto
-    const wajibFoto = ["hadir", "dinas", "wfh"].includes(status);
+    const wajibFoto = ["hadir", "dinas", "wfh", "pulang"].includes(status);
     if (useCamera && wajibFoto && !fotoData) {
         showPopup("Foto Kehadiran wajib untuk status " + statusRaw + "!", "warning");
         vibrateAlertShort();
@@ -1659,7 +1660,7 @@ async function submitAbsensiForm() {
   	}
 
 	// 📏 Validasi Radius & Kesiapan Data
-	if (status === "hadir" || status === "wfh") {
+	if (status === "hadir" || status === "wfh" || status === "pulang") {
 	    
 	    // 1. Ambil Nama Lokasi
 	    const elNama = document.getElementById("titikKoordinatTampil");
@@ -1775,6 +1776,13 @@ async function submitAbsensiForm() {
 		    Pegawai: <b>${res.nama}</b><br>
 		    🕒 Waktu: <b>${waktuID}</b><br>
 		    Selamat menjalankan tugas dinas.`;
+			}
+
+			else if (status === "Pulang") {
+		    pesan = `✅ Absensi Pulang Berhasil<br>
+		    Pegawai: <b>${res.nama}</b><br>
+		    🕒 Waktu: <b>${waktuID}</b><br>
+		    Selamat istirahat dan hati-hati dijalan.`;
 			}
 		    
 		    else {
