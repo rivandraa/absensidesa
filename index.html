@@ -1739,75 +1739,73 @@ async function submitAbsensiForm() {
         document.getElementById('reset').disabled = false;
         isSubmitting = false;
 
-		if (res.status === "berhasil") {
-		    const waktuID = formatIndonesia(res.waktu);
-		    let pesan = "";
-		
-		    if (status === "Hadir") {
-		        pesan = `✅ Absensi Kehadiran Berhasil<br>
-		        Pegawai: <b>${res.nama}</b><br>
-		        🕒 Waktu: <b>${waktuID}</b><br>
-		        Terima kasih, selamat menjalankan tugas.`;
-		    } 
-		    
-		    else if (status === "WFH") {
-		        pesan = `✅ Absensi WFH Berhasil<br>
-		        Pegawai: <b>${res.nama}</b><br>
-		        🕒 Waktu: <b>${waktuID}</b><br>
-		        Tetap semangat bekerja dari rumah.`;
-		    } 
-		    
-		    else if (status === "Izin") {
-		        pesan = `✅ Pengajuan Izin Berhasil<br>
-		        Pegawai: <b>${res.nama}</b><br>
-		        🕒 Waktu: <b>${waktuID}</b><br>
-		        Permohonan izin telah dicatat.`;
-		    } 
-		    
-		    else if (status === "Sakit") {
-		        pesan = `✅ Laporan Sakit Berhasil<br>
-		        Pegawai: <b>${res.nama}</b><br>
-		        🕒 Waktu: <b>${waktuID}</b><br>
-		        Semoga lekas pulih.`;
-		    }
-				
-			else if (status === "Dinas") {
-		    pesan = `✅ Absensi Dinas Berhasil<br>
-		    Pegawai: <b>${res.nama}</b><br>
-		    🕒 Waktu: <b>${waktuID}</b><br>
-		    Selamat menjalankan tugas dinas.`;
-			}
+if (res.status === "berhasil") {
+    const waktuID = formatIndonesia(res.waktu);
+    let pesan = "";
 
-			else if (status === "Pulang") {
-		    pesan = `✅ Absensi Pulang Berhasil<br>
-		    Pegawai: <b>${res.nama}</b><br>
-		    🕒 Waktu: <b>${waktuID}</b><br>
-		    Selamat istirahat dan hati-hati dijalan.`;
-			}
-		    
-		    else {
-		        // fallback kalau status tidak terdeteksi
-		        pesan = `✅ Absensi berhasil!<br>
-		        Pegawai: <b>${res.nama}</b><br>
-		        🕒 Waktu: <b>${waktuID}</b>`;
-		    }
-		
-		    showPopup(pesan, "success", 6000);
-		    vibrateAlertLong();
-		    
-		    // Reset Form
-		    $('#status').val('');
-		    $('#keterangan').val('');
-		    fotoData = null;
-		    resetFoto();
-		
-		} else if (res.status === "sudah_absen") {
-		    const waktuID = formatIndonesia(res.waktu);
-		    showPopup(
-		        `⚠️ Absensi sudah tercatat hari ini<br>
-		        🕒 Waktu terakhir: <b>${waktuID}</b>`,
-		        "warning", 6000
-		    );
+    if (status === "Hadir") {
+        pesan = `✅ Absensi Kehadiran Berhasil<br>
+        Pegawai: <b>${res.nama}</b><br>
+        🕒 Waktu: <b>${waktuID}</b><br>
+        Terima kasih, selamat menjalankan tugas.`;
+    } 
+    else if (status === "WFH") {
+        pesan = `✅ Absensi WFH Berhasil<br>
+        Pegawai: <b>${res.nama}</b><br>
+        🕒 Waktu: <b>${waktuID}</b><br>
+        Tetap semangat bekerja dari rumah.`;
+    } 
+    else if (status === "Izin") {
+        pesan = `✅ Pengajuan Izin Berhasil<br>
+        Pegawai: <b>${res.nama}</b><br>
+        🕒 Waktu: <b>${waktuID}</b><br>
+        Permohonan izin telah dicatat.`;
+    } 
+    else if (status === "Sakit") {
+        pesan = `✅ Laporan Sakit Berhasil<br>
+        Pegawai: <b>${res.nama}</b><br>
+        🕒 Waktu: <b>${waktuID}</b><br>
+        Semoga lekas pulih.`;
+    }
+    else if (status === "Dinas") {
+        pesan = `✅ Absensi Dinas Berhasil<br>
+        Pegawai: <b>${res.nama}</b><br>
+        🕒 Waktu: <b>${waktuID}</b><br>
+        Selamat menjalankan tugas dinas.`;
+    }
+    else if (status === "Pulang") {
+        pesan = `✅ Absensi Pulang Berhasil<br>
+        Pegawai: <b>${res.nama}</b><br>
+        🕒 Waktu: <b>${waktuID}</b><br>
+        Selamat istirahat dan hati-hati di jalan.`;
+    }
+    else {
+        pesan = `✅ Absensi berhasil!<br>
+        Pegawai: <b>${res.nama}</b><br>
+        🕒 Waktu: <b>${waktuID}</b>`;
+    }
+
+    showPopup(pesan, "success", 6000);
+    vibrateAlertLong();
+    
+    // Reset Form
+    $('#status').val('');
+    $('#keterangan').val('');
+    fotoData = null;
+    resetFoto();
+
+} else if (res.status === "sudah_absen") {
+    const waktuID = formatIndonesia(res.waktu);
+    
+    // Membuat pesan dinamis berdasarkan status yang sedang dipilih
+    const labelStatus = status === "Hadir" ? "Hadir" : (status === "Pulang" ? "Pulang" : status);
+    
+    showPopup(
+        `⚠️ Absensi <b>${labelStatus}</b> sudah tercatat hari ini<br>
+        🕒 Waktu terakhir: <b>${waktuID}</b>`,
+        "warning", 6000
+    );
+}
 		    vibrateAlertLong();
 		
 		} else {
