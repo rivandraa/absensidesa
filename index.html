@@ -817,7 +817,6 @@ function forceUpdateDistanceUI(lat, lon, acc) {
 // =====================================================
 let isFetchingLocation = false;
 
-// Tambahkan parameter 'isSilent' untuk membedakan interval dan manual
 async function refreshTargetLocation(callback) {
     const userObj = userData || JSON.parse(sessionStorage.getItem('userData'));
     const userRequesting = userObj ? userObj.username : null;
@@ -828,69 +827,92 @@ async function refreshTargetLocation(callback) {
     const tampil = document.getElementById("titikKoordinatTampil");
     const hidden = document.getElementById("titikKoordinat");
 
-	// 1. CEK STATUS DULU (Prioritas Utama)
-	if (!currentStatus || currentStatus === "Pilih Status..." || currentStatus === "") {
-	    if (tampil) tampil.value = "⚠️ Status Absen belum dipilih.";
-		isLoading = false;
-	    return; 
-	}
-	
-    // Jika status non-lokasi, langsung set dan berhenti
+    // ===============================
+    // 1. VALIDASI STATUS
+    // ===============================
+    if (!currentStatus || currentStatus === "Pilih Status...") {
+        if (tampil) tampil.value = "⚠️ Status Absen belum dipilih.";
+        isLoading = false;
+        return;
+    }
+
+    // ===============================
+    // 2. STATUS TANPA KOORDINAT
+    // ===============================
     if (["Dinas", "Izin", "Sakit"].includes(currentStatus)) {
         if (tampil) tampil.value = "-";
         if (hidden) hidden.value = "-";
+
         targetLocation = null;
         lastTargetLocation = null;
-		isLoading = false;
-        return; 
+        isLoading = false;
+
+        // langsung update UI (tanpa nunggu GPS)
+        forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
+        return;
     }
 
     if (isFetchingLocation) return;
 
     try {
         isFetchingLocation = true;
-        const url = `${GAS_URL}?action=getTargetLocation&username=${encodeURIComponent(userRequesting)}&status=${encodeURIComponent(currentStatus)}`;
-        const response = await fetch(url);
-		const text = await response.text();
-		
-		// kasih napas ke UI dulu
-		await new Promise(r => setTimeout(r, 0));
-		
-		const loc = JSON.parse(text);
 
-        // Validasi agar data yang telat tidak menimpa status yang sudah berubah
+        const url = `${GAS_URL}?action=getTargetLocation&username=${encodeURIComponent(userRequesting)}&status=${encodeURIComponent(currentStatus)}`;
+
+        const response = await fetch(url);
+        const loc = await response.json(); // ⬅️ langsung json, lebih cepat
+
+        // ===============================
+        // CEK STATUS BERUBAH ATAU TIDAK
+        // ===============================
         if (document.getElementById("status")?.value !== currentStatus) return;
 
+        // ===============================
+        // JIKA ADA LOKASI TARGET
+        // ===============================
         if (loc && loc.lat && loc.lon) {
-            const newLocation = { lat: parseFloat(loc.lat), lon: parseFloat(loc.lon) };
-            
-            // Update memori
+            const newLocation = {
+                lat: parseFloat(loc.lat),
+                lon: parseFloat(loc.lon)
+            };
+
             targetLocation = newLocation;
             lastTargetLocation = newLocation;
 
-            // Update Tampilan (Tanpa kedip karena isSilent menangani ini)
             const koordinatMurni = `${newLocation.lat.toFixed(6)}, ${newLocation.lon.toFixed(6)}`;
-            if (tampil) tampil.value = (loc.nama && loc.nama.trim() !== "") ? loc.nama : koordinatMurni;
+
+            if (tampil) {
+                tampil.value = (loc.nama && loc.nama.trim() !== "")
+                    ? loc.nama
+                    : koordinatMurni;
+            }
+
             if (hidden) hidden.value = koordinatMurni;
 
-			if (gpsData[0] !== 0) {
-			    setTimeout(() => {
-			        forceUpdateDistanceUI();
-			    }, 0);
-			}
+            // 🚀 UPDATE LANGSUNG TANPA DELAY
+            if (gpsData[0] !== 0) {
+                forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
+            }
+
         } else {
             targetLocation = null;
+
             if (tampil) tampil.value = "-";
+
+            // update juga biar UI tidak nunggu
+            forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
         }
+
     } catch (error) {
         console.error("Gagal refresh:", error);
     } finally {
         isFetchingLocation = false;
-		isLoading = false;
-		if (typeof callback === "function") callback();
+        isLoading = false;
+
+        if (typeof callback === "function") callback();
     }
 }
-    
+
 // =====================================================
 // CALCULATION LOGIC
 // =====================================================
