@@ -1047,6 +1047,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	if (statusEl) {
 		statusEl.addEventListener("change", () => {
+			const statusTerpilih = $(this).val();
 		    // A. RESET DATA & AKTIFKAN GEMBOK
 		    targetLocation = null;
 		    lastInsideArea = false;
