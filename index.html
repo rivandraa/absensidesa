@@ -143,10 +143,11 @@ body.locked {
     <select id="status" class="form-control">
         <option value="" disabled selected hidden>Pilih Status Absen</option>
         <option value="Hadir" id="opt-hadir">Hadir</option>
-        <option value="Pulang" id="opt-pulang" style="display:none;">Pulang</option>
+        <option value="Pulang" id="opt-pulang">Pulang</option>
         <option value="Izin">Izin</option>
         <option value="Sakit">Sakit</option>
         <option value="Dinas">Dinas</option>
+        <option value="WFH" disabled hidden>WFH</option>
     </select>
 </div>
 
@@ -280,36 +281,6 @@ body.locked {
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   
 <script>
-//==========================================================
-function aturTampilanStatus() {
-    const userData = JSON.parse(localStorage.getItem('userData'));
-    if (!userData) return;
-
-    // Panggil fungsi GAS
-    google.script.run.withSuccessHandler(function(hasil) {
-        const optHadir = document.getElementById('opt-hadir');
-        const optPulang = document.getElementById('opt-pulang');
-
-        if (hasil === "sudah_masuk") {
-            // Jika sudah absen masuk, sembunyikan Hadir, munculkan Pulang
-            if (optHadir) optHadir.style.display = 'none';
-            if (optPulang) optPulang.style.display = 'block';
-        } else if (hasil === "sudah_pulang") {
-            // Jika sudah pulang, sembunyikan keduanya (opsional) atau biarkan Pulang tetap ada
-            if (optHadir) optHadir.style.display = 'none';
-            if (optPulang) optPulang.style.display = 'none';
-        } else {
-            // Jika belum absen sama sekali
-            if (optHadir) optHadir.style.display = 'block';
-            if (optPulang) optPulang.style.display = 'none';
-        }
-    }).cekStatusHariIni(userData.username, userData.spreadsheetId);
-}
-
-// Jalankan fungsi ini di dalam $(document).ready atau setelah login berhasil
-$(document).ready(function() {
-    aturTampilanStatus();
-});
 /* =========================================================================================================
     BAGIAN KODE TANGGAL
     Fungsi: Menampilkan tanggal dan waktu real-time pada halaman login dan absensi
@@ -591,7 +562,7 @@ async function loginUser() {
 }
 
 /* FUNGSI STATUS */
-/*function updateStatusOptions() {
+function updateStatusOptions() {
     const sekarang = new Date();
     const jam = sekarang.getHours(); // Mengambil jam (0-23)
     
@@ -616,7 +587,7 @@ $(document).ready(function() {
     
     // Opsional: Cek setiap 1 menit jika user mendiamkan halaman di ambang jam 12
     setInterval(updateStatusOptions, 60000); 
-}); */
+});
 /* =========================================================================================================
     BAGIAN KODE GPS (DIV DISPLAY)
     Hanya menyesuaikan tampilan ke <div> + hidden input. Logika lain tetap dipertahankan.
