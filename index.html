@@ -1047,7 +1047,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	if (statusEl) {
 		statusEl.addEventListener("change", () => {
-			const statusTerpilih = $(this).val();
 		    // A. RESET DATA & AKTIFKAN GEMBOK
 		    targetLocation = null;
 		    lastInsideArea = false;
@@ -1063,7 +1062,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		    
 		    // D. AMBIL DATA DARI SERVER
 		    // Memanggil Google Spreadsheet untuk mencari koordinat baru
-		    refreshTargetLocation(statusTerpilih);
+		    refreshTargetLocation(null, false);
 		});
 	}
     
@@ -1822,13 +1821,17 @@ if (res.status === "berhasil") {
     fotoData = null;
     resetFoto();
 
-		} else if (res.status === "sudah_absen") {
-		    const waktuID = formatIndonesia(res.waktu);
-		    showPopup(
-		        `⚠️ Absensi sudah tercatat hari ini<br>
-		        🕒 Waktu terakhir: <b>${waktuID}</b>`,
-		        "warning", 6000
-		    );
+} else if (res.status === "sudah_absen") {
+    const waktuID = formatIndonesia(res.waktu);
+    
+    // Membuat pesan dinamis berdasarkan status yang sedang dipilih
+    const labelStatus = status === "Hadir" ? "Hadir" : (status === "Pulang" ? "Pulang" : status);
+    
+    showPopup(
+        `⚠️ Absensi <b>${labelStatus}</b> sudah tercatat hari ini<br>
+        🕒 Waktu terakhir: <b>${waktuID}</b>`,
+        "warning", 6000
+    );
 		    vibrateAlertLong();
 		
 		} else {
