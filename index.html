@@ -144,9 +144,9 @@ body.locked {
         <option value="" disabled selected hidden>Pilih Status Absen</option>
         <option value="Hadir" id="opt-hadir">Hadir</option>
         <option value="Pulang" id="opt-pulang">Pulang</option>
-        <option value="Izin">Izin</option>
-        <option value="Sakit">Sakit</option>
-        <option value="Dinas">Dinas</option>
+        <option value="Izin"id="opt-izn">Izin</option>
+        <option value="Sakit"id="opt-sakit">Sakit</option>
+        <option value="Dinas"id="opt-dinas">Dinas</option>
         <option value="WFH" disabled hidden>WFH</option>
     </select>
 </div>
@@ -567,16 +567,19 @@ function updateStatusOptions() {
     const jam = sekarang.getHours(); // Mengambil jam (0-23)
     
     const optHadir = document.getElementById('opt-hadir');
+	const optizin = document.getElementById('opt-izin');
+	const optsakit = document.getElementById('opt-sakit');
+	const optdinas = document.getElementById('opt-dinas');
     const optPulang = document.getElementById('opt-pulang');
     const selectStatus = document.getElementById('status');
 
     if (jam < 12) {
         // JIKA SEBELUM JAM 12 SIANG
-        if (optHadir) optHadir.style.display = 'block';
+        if (optHadir || optizin || optsakit || optdinas) optHadir.style.display = 'block';
         if (optPulang) optPulang.style.display = 'none';
     } else {
         // JIKA JAM 12 SIANG ATAU LEBIH
-        if (optHadir) optHadir.style.display = 'none';
+        if (optHadir || optizin || optsakit || optdinas) optHadir.style.display = 'none';
         if (optPulang) optPulang.style.display = 'block';
     }
 }
