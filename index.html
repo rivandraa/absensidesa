@@ -280,34 +280,36 @@ body.locked {
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   
 <script>
-// Tambahkan ini di kode .gs Anda
-function cekStatusHariIni(username, spreadsheetId) {
-  var ss = SpreadsheetApp.openById(spreadsheetId);
-  var sheet = ss.getSheetByName("Form Responses");
-  if (!sheet) return "belum";
+//==========================================================
+function aturTampilanStatus() {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (!userData) return;
 
-  var data = sheet.getDataRange().getValues();
-  var now = new Date();
-  var hariIni = Utilities.formatDate(now, "Asia/Makassar", "yyyy-MM-dd");
+    // Panggil fungsi GAS
+    google.script.run.withSuccessHandler(function(hasil) {
+        const optHadir = document.getElementById('opt-hadir');
+        const optPulang = document.getElementById('opt-pulang');
 
-  // Cari dari bawah ke atas (data terbaru)
-  for (var i = data.length - 1; i >= 1; i--) {
-    var tglSheet = Utilities.formatDate(new Date(data[i][0]), "Asia/Makassar", "yyyy-MM-dd");
-    var namaSheet = data[i][1]; // Kolom Nama/Username (sesuaikan indeksnya)
-    var statusSheet = data[i][3]; // Kolom Status
-
-    if (tglSheet === hariIni) {
-      // Jika ditemukan sudah Hadir atau Dinas hari ini
-      if (statusSheet === "Hadir" || statusSheet === "Dinas") {
-        return "sudah_masuk";
-      }
-      if (statusSheet === "Pulang") {
-        return "sudah_pulang";
-      }
-    }
-  }
-  return "belum";
+        if (hasil === "sudah_masuk") {
+            // Jika sudah absen masuk, sembunyikan Hadir, munculkan Pulang
+            if (optHadir) optHadir.style.display = 'none';
+            if (optPulang) optPulang.style.display = 'block';
+        } else if (hasil === "sudah_pulang") {
+            // Jika sudah pulang, sembunyikan keduanya (opsional) atau biarkan Pulang tetap ada
+            if (optHadir) optHadir.style.display = 'none';
+            if (optPulang) optPulang.style.display = 'none';
+        } else {
+            // Jika belum absen sama sekali
+            if (optHadir) optHadir.style.display = 'block';
+            if (optPulang) optPulang.style.display = 'none';
+        }
+    }).cekStatusHariIni(userData.username, userData.spreadsheetId);
 }
+
+// Jalankan fungsi ini di dalam $(document).ready atau setelah login berhasil
+$(document).ready(function() {
+    aturTampilanStatus();
+});
 /* =========================================================================================================
     BAGIAN KODE TANGGAL
     Fungsi: Menampilkan tanggal dan waktu real-time pada halaman login dan absensi
