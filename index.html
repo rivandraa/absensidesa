@@ -573,15 +573,24 @@ function updateStatusOptions() {
     const optPulang = document.getElementById('opt-pulang');
     const selectStatus = document.getElementById('status');
 
-    if (jam < 12) {
-        // JIKA SEBELUM JAM 12 SIANG
-        if (optHadir && opIizin && optSakit && optDinas) optHadir.style.display = 'block';
-        if (optPulang) optPulang.style.display = 'none';
-    } else {
-        // JIKA JAM 12 SIANG ATAU LEBIH
-        if (optHadir && opIizin && optSakit && optDinas) optHadir.style.display = 'none';
-        if (optPulang) optPulang.style.display = 'block';
-    }
+	if (jam < 12) {
+	    // SEBELUM JAM 12 → tampilkan opsi MASUK
+	    if (optHadir) optHadir.style.display = 'block';
+	    if (optIzin) optIzin.style.display = 'block';
+	    if (optSakit) optSakit.style.display = 'block';
+	    if (optDinas) optDinas.style.display = 'block';
+	
+	    if (optPulang) optPulang.style.display = 'none';
+	
+	} else {
+	    // SETELAH JAM 12 → tampilkan PULANG
+	    if (optHadir) optHadir.style.display = 'none';
+	    if (optIzin) optIzin.style.display = 'none';
+	    if (optSakit) optSakit.style.display = 'none';
+	    if (optDinas) optDinas.style.display = 'none';
+	
+	    if (optPulang) optPulang.style.display = 'block';
+	}
 }
 
 // Jalankan fungsi saat halaman dimuat
