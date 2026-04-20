@@ -922,7 +922,7 @@ function forceUpdateDistanceUI(lat, lon, acc) {
         
         if (!hasTargetData) {
             lastInsideArea = false;
-            displayText += `\nSedang menghitung jarak anda dengan titik koordinat absensi`;
+            displayText += `\nSedang menghitung jarak anda dengan titik koordinat absensi${".".repeat(accDots)}`;
             updateGPSDisplay(displayText);
             return; // Berhenti di sini agar tidak memproses kode di bawahnya
         }
