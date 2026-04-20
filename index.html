@@ -23,20 +23,24 @@
   </div>
 </div>
 
+<div id="ping-container" style="display: none; position: fixed; top: 6px; left: 50%; transform: translateX(-50%); z-index: 9999; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 15px; font-family: sans-serif; align-items: center; justify-content: center; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; pointer-events: none;">
+    <div id="ping-dot" style="width: 5px; height: 5px; background: #2ecc71; border-radius: 50%; margin-right: 5px; box-shadow: 0 0 5px #2ecc71;"></div>
+    <span id="ping-display" style="color: #fff; font-size: 11px; font-weight: bold; line-height: 1; letter-spacing: 0.2px;">Checking...</span>
+</div>
+
 <script>
 (function() {
     // ==========================================
     // BAGIAN 0: KONFIGURASI BERSAMA (Shared)
     // ==========================================
     const ua = navigator.userAgent || "";
-    const REQUIRED_VERSION = "PEMDES_GALUNGAN_ANDROID_v1.1.0";
+    const REQUIRED_VERSION = "ABSENSI_PEMDES_ANDROID_v2.0.0";
     
     const match = ua.match(/APP_TOKEN=([^;]+)/);
     const token = match ? match[1] : null;
     const isAndroidApp = token !== null;
     const isValidApp = token === REQUIRED_VERSION;
     const isSafariIphone = /iPhone|iPad|iPod/i.test(ua) && /Safari/i.test(ua) && !/CriOS/i.test(ua) && !/FBIOS/i.test(ua);
-
 
     // ==========================================
     // BAGIAN 1: SISTEM UPDATE (Standalone)
@@ -115,7 +119,6 @@
         setTimeout(showUpdatePopup, 500);
     }
 
-
     // ==========================================
     // BAGIAN 2: SISTEM PERINGATAN (Gatekeeper)
     // ------------------------------------------
@@ -145,6 +148,52 @@
     }
 
 })();
+
+// ==========================================
+// BAGIAN 3: PING KONEKSI
+// ------------------------------------------
+// Bagian ini bertugas ping ke server
+// ==========================================
+window.updatePingStatus = function(ping) {
+    const pingEl = document.getElementById('ping-display');
+    const dotEl = document.getElementById('ping-dot');
+    if (!pingEl || !dotEl) return;
+
+    pingEl.innerText = ping;
+
+    if (ping === "Offline" || ping === "Error") {
+        pingEl.innerText = "📶 Disconnected";
+        pingEl.style.color = "#ff4d4d";
+        dotEl.style.backgroundColor = "#ff4d4d";
+        dotEl.style.boxShadow = "0 0 8px #ff4d4d";
+    } else {
+        const ms = parseInt(ping);
+        // Logika warna Sinyal
+        if (ms < 100) { // Bagus
+            pingEl.style.color = "#2ecc71";
+            dotEl.style.backgroundColor = "#2ecc71";
+            dotEl.style.boxShadow = "0 0 8px #2ecc71";
+        } else if (ms < 300) { // Sedang
+            pingEl.style.color = "#f1c40f";
+            dotEl.style.backgroundColor = "#f1c40f";
+            dotEl.style.boxShadow = "0 0 8px #f1c40f";
+        } else { // Buruk / Lag
+            pingEl.style.color = "#e67e22";
+            dotEl.style.backgroundColor = "#e67e22";
+            dotEl.style.boxShadow = "0 0 8px #e67e22";
+        }
+    }
+};
+
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.Android) {
+        const pingContainer = document.getElementById('ping-container');
+        if (pingContainer) {
+            // Gunakan flex agar isi di dalamnya (dot dan teks) tetap rapi di tengah
+            pingContainer.style.setProperty('display', 'flex', 'important'); 
+        }
+    }
+});
 </script>
         
 <!-- Bootstrap CSS -->
