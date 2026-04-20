@@ -863,10 +863,10 @@ function updateGPSDisplay(text) {
 
 function startGPSLoading() {
     animatingGPS = true;
-
     stopGPSLoading();
 
     gpsLoadingInterval = setInterval(() => {
+        accDots = (accDots % 3) + 1; 
         updateGPSDisplay(`Sedang memperbarui lokasi${".".repeat(accDots)}`);
     }, 500);
 }
