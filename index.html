@@ -5,68 +5,147 @@
 <base target="_top"> 
 <meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=0.8, user-scalable=no">
 
-<!-- <div id="gatekeeper-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); z-index:999999; justify-content:center; align-items:center; padding:20px; box-sizing:border-box;">
-  
-  <div style="text-align:center; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 50px 40px; border-radius: 28px; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 25px 50px rgba(0,0,0,0.5); max-width: 550px; width: 100%; animation: fadeInUp 0.8s ease-out;">
-    
+<div id="gatekeeper-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); z-index:999999; justify-content:center; align-items:center; padding:20px; box-sizing:border-box;">
+  <div style="text-align:center; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px); padding: 50px 40px; border-radius: 28px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); max-width: 550px; width: 100%;">
     <div style="width: 80px; height: 80px; background: #fff5f5; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 25px;">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
     </div>
-
-    <b style="font-size:24px; display:block; margin-bottom:8px; color: #2c3e50; letter-spacing: 1px; white-space: nowrap;">PEMERINTAH DESA GALUNGAN</b>
+    <h2 style="font-size:24px; margin-bottom:8px; color: #2c3e50;">PEMERINTAH DESA GALUNGAN</h2>
     <span style="font-size:14px; color:#3498db; font-weight:700; display:block; margin-bottom:30px; text-transform: uppercase; letter-spacing: 3px;">Layanan Absensi Digital</span>
-    
-    <div style="background: #fdfdfd; padding: 25px; border-radius: 18px; margin-bottom: 25px; border-left: 5px solid #e74c3c; box-shadow: inset 0 0 10px rgba(0,0,0,0.02);">
-        <p id="gate-message" style="font-size:16px; color:#333; line-height:1.6; margin:0; font-weight: 500;"></p>
+    <div style="background: #fdfdfd; padding: 25px; border-radius: 18px; margin-bottom: 25px; border-left: 5px solid #e74c3c;">
+        <p id="gate-message" style="font-size:16px; color:#333; line-height:1.6; margin:0;">Silakan gunakan aplikasi resmi untuk mengakses layanan ini.</p>
     </div>
-
-    <p style="font-size:14px; color:#7f8c8d; line-height:1.8; margin-bottom: 0; padding: 0 10px;">Aplikasi ini hanya dapat dibuka melalui <b>Smartphone (Android/iOS)</p>
-    
-    <div style="margin-top:35px; font-size:11px; color:#bdc3c7; border-top: 1px solid #f1f1f1; padding-top:25px; font-weight: 500;">
-        © 2026 Pemerintah Desa Galungan
-    </div>
+    <p style="font-size:14px; color:#7f8c8d; margin-bottom: 25px;">Aplikasi ini hanya dapat dibuka melalui <b>Smartphone (Android/iOS)</b></p>
+    <div style="margin-top:35px; font-size:11px; color:#bdc3c7; border-top: 1px solid #f1f1f1; padding-top:25px;">© 2026 galungan.tech • webapp v1.1.0</div>
   </div>
 </div>
 
-<style>
-/* Animasi Muncul Halus */
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Memperhalus tampilan body saat terkunci */
-body.locked {
-    height: 100vh;
-    overflow: hidden !important;
-}
-</style>
-
-        <script>
+<script>
 (function() {
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const overlay = document.getElementById('gatekeeper-overlay');
-  const gateMessage = document.getElementById('gate-message');
+    // ==========================================
+    // BAGIAN 0: KONFIGURASI BERSAMA (Shared)
+    // ==========================================
+    const ua = navigator.userAgent || "";
+    const REQUIRED_VERSION = "PEMDES_GALUNGAN_ANDROID_v1.1.0";
+    
+    const match = ua.match(/APP_TOKEN=([^;]+)/);
+    const token = match ? match[1] : null;
+    const isAndroidApp = token !== null;
+    const isValidApp = token === REQUIRED_VERSION;
+    const isSafariIphone = /iPhone|iPad|iPod/i.test(ua) && /Safari/i.test(ua) && !/CriOS/i.test(ua) && !/FBIOS/i.test(ua);
 
-  if (!isMobile) {
-    // 1. Tampilkan Overlay
-    overlay.style.display = 'flex';
-    gateMessage.innerHTML = "<span style='color:#e74c3c; font-size:16px;'>AKSES DIBATASI!</span><br>Sistem mendeteksi Anda menggunakan perangkat Desktop/Laptop.";
+
+    // ==========================================
+    // BAGIAN 1: SISTEM UPDATE (Standalone)
+    // ------------------------------------------
+    // Bagian ini hanya bertugas mengecek versi 
+    // dan menjalankan proses download APK.
+    // ==========================================
     
-    // 2. Sembunyikan SEMUA elemen selain overlay secara agresif
-    // Kita gunakan style sheet baru untuk memastikan tidak ada yang bisa tampil
-    const sheet = document.createElement('style');
-    sheet.innerHTML = "body > *:not(#gatekeeper-overlay) { display: none !important; }";
-    document.head.appendChild(sheet);
-    
-    // 3. Kunci scroll body
-    document.body.classList.add('locked');
-  } else {
-    // JIKA HP: Hapus overlay dari DOM agar tidak memperberat memori
-    overlay.remove();
-  }
+    let countdownInterval = null;
+    let isUpdating = false;
+
+    // UI Progress Download
+    window.updateDownloadProgress = function(p) {
+        let el = document.getElementById("downloadProgress");
+        if (!el) {
+            el = document.createElement("div");
+            el.id = "downloadProgress";
+            el.style = "position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:white; padding:12px 25px; border-radius:25px; z-index:1000001; font-size:14px; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.3);";
+            document.body.appendChild(el);
+        }
+        el.innerText = "📥 Mengunduh: " + p + "%";
+    };
+
+    window.downloadComplete = function() {
+        const el = document.getElementById("downloadProgress");
+        if (el) {
+            el.style.backgroundColor = "#27ae60";
+            el.innerText = "✅ Download selesai ✓";
+            setTimeout(() => el.remove(), 3000);
+        }
+        document.body.style.pointerEvents = "auto";
+    };
+
+    // Fungsi Jalankan Update
+    window.goUpdate = function() {
+        isUpdating = true;
+        if (countdownInterval) clearInterval(countdownInterval);
+        document.body.style.pointerEvents = "none";
+        const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v1.2.0/Absensi.Bumdes.Galungan.v1.2.0.apk?t=" + new Date().getTime();
+
+        if (window.UpdateBridge) {
+            UpdateBridge.downloadUpdate(apkUrl);
+        } else {
+            window.location.href = apkUrl;
+        }
+    };
+
+    // Tampilkan Popup Update
+    function showUpdatePopup() {
+        const style = document.createElement('style');
+        style.innerHTML = `@keyframes fadeIn { from {opacity:0; transform:scale(0.9);} to {opacity:1; transform:scale(1);} }`;
+        document.head.appendChild(style);
+
+        document.body.innerHTML = `
+          <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:999999; font-family:sans-serif;">
+            <div style="background:#fff; padding:35px; border-radius:16px; text-align:center; max-width:350px; width:90%; animation:fadeIn 0.4s ease;">
+              <h2 style="margin-bottom:10px;">🚀 Update Tersedia</h2>
+              <p style="color:#555; margin-bottom:20px;">Versi aplikasi kamu sudah tidak didukung.<br>Silakan update untuk melanjutkan.</p>
+              <button onclick="goUpdate()" style="padding:12px 22px; border:none; border-radius:10px; background:#27ae60; color:#fff; font-size:15px; font-weight:bold; cursor:pointer;">⬇️ Update Sekarang</button>
+              <p id="countdown" style="font-size:13px; color:#888; margin-top:15px;">Redirect otomatis dalam 5 detik...</p>
+            </div>
+          </div>`;
+        
+        let t = 5;
+        countdownInterval = setInterval(() => {
+            if (isUpdating) return clearInterval(countdownInterval);
+            t--;
+            const el = document.getElementById("countdown");
+            if (el) el.innerText = `Redirect otomatis dalam ${t} detik...`;
+            if (t <= 0) { clearInterval(countdownInterval); goUpdate(); }
+        }, 1000);
+    }
+
+    // Jalankan pengecekan update jika di Android
+    if (isAndroidApp && !isValidApp) {
+        setTimeout(showUpdatePopup, 500);
+    }
+
+
+    // ==========================================
+    // BAGIAN 2: SISTEM PERINGATAN (Gatekeeper)
+    // ------------------------------------------
+    // Bagian ini bertugas memblokir akses jika
+    // dibuka dari Laptop/Desktop/Chrome biasa.
+    // HAPUS/COMMENT bagian ini jika ingin disable.
+    // ==========================================
+    const overlay = document.getElementById('gatekeeper-overlay');
+    const gateMessage = document.getElementById('gate-message');
+	
+	// TAMBAHKAN BARIS return; UNTUK MATIKAN BLOKIR SEMENTARA:
+    return;
+	
+    if (!isAndroidApp && !isSafariIphone) {
+        // Blokir akses jika bukan dari App Resmi
+        if (overlay) {
+            overlay.style.display = 'flex';
+            gateMessage.innerHTML = "<span style='color:#e74c3c; font-size:18px; font-weight:bold;'>AKSES DITOLAK!</span><br>Sistem mendeteksi Anda tidak menggunakan Aplikasi Resmi.";
+        }
+        
+        const s = document.createElement('style');
+        s.innerHTML = "body > *:not(#gatekeeper-overlay) { display:none !important; }";
+        document.head.appendChild(s);
+    } else {
+        // Jika lolos seleksi (App Resmi/iPhone), hapus overlay blokir
+        if (overlay) overlay.remove();
+    }
+
 })();
-</script> -->
+</script>
         
 <!-- Bootstrap CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
