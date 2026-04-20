@@ -39,8 +39,8 @@
     const match = ua.match(/APP_TOKEN=([^;]+)/);
     const token = match ? match[1] : null;
 
-    // 1. Cek apakah ini Aplikasi resmi Mas (v1.2.0)
-    const isAndroidApp = token !== null; // Mengetahui ini App (v1.2.0 ke atas)
+    // 1. Cek apakah ini Aplikasi resmi
+    const isAndroidApp = token !== null; // Mengetahui ini App
     const isValidApp   = token === REQUIRED_VERSION; // Mengetahui ini App yang BENAR
 
     // 3. Cek Chrome di Android (Bukan dari dalam aplikasi/WebView lain)
