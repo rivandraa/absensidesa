@@ -42,6 +42,30 @@
     const isValidApp = token === REQUIRED_VERSION;
     const isSafariIphone = /iPhone|iPad|iPod/i.test(ua) && /Safari/i.test(ua) && !/CriOS/i.test(ua) && !/FBIOS/i.test(ua);
 
+	// ==========================================
+    // LOGIKA PEMBLOKIRAN VERSI LAMA
+    // ==========================================
+    if (isAndroidApp && !isValidApp) {
+        // Jika terdeteksi akses dari App Android tapi Token/Versi tidak sesuai
+        document.body.innerHTML = `
+            <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; font-family: sans-serif; background: #f8f9fa;">
+                <div style="font-size: 50px;">📲</div>
+                <h2 style="color: #d32f2f; margin-top: 20px;">Versi Aplikasi Usang</h2>
+                <p style="color: #555; line-height: 1.5;">
+                    Maaf, aplikasi yang Anda gunakan adalah versi lama.<br>
+                    Untuk keamanan dan kestabilan sistem absensi terbaru, silakan perbarui aplikasi Anda</b>.
+                </p>
+                <div style="margin-top: 25px; padding: 15px; background: #fff; border: 1px solid #ddd; border-radius: 8px;">
+                    <p style="margin: 0; font-size: 14px; color: #777;">Versi Anda: <br><span style="color: #d32f2f;">${token}</span></p>
+                    <p style="margin: 10px 0 0; font-size: 14px; color: #777;">Versi Wajib: <br><span style="color: #2e7d32;">${REQUIRED_VERSION}</span></p>
+                </div>
+                <p style="margin-top: 30px; font-size: 13px; color: #888;">Silakan hubungi Admin.</p>
+            </div>
+        `;
+        // Hentikan eksekusi script selanjutnya
+        throw new Error("Aplikasi versi lama terdeteksi dan diblokir.");
+    }
+	
     // ==========================================
     // BAGIAN 1: SISTEM UPDATE (Standalone)
     // ------------------------------------------
