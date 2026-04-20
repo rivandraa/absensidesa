@@ -1190,19 +1190,20 @@ function startGPSMonitoring(onReady) {
 // ====== EVENT LISTENER STATUS ======
 let isLoading = false; // Gembok global
 
-function updateLoadingDots(count) {
-    if (!isLoading) return; 
-
-    const elNama = document.getElementById("titikKoordinatTampil");
-    if (elNama) {
-        // Menggunakan array untuk menghindari kalkulasi berat saat UI sibuk
-        const dots = ["", ".", "..", "..."];
-        elNama.value = "Sedang update koordinat" + dots[count % 4];
-    }
-
-    // Gunakan 600ms agar ritme sinkron dengan mata manusia
-    setTimeout(() => updateLoadingDots(count + 1), 600);
-}
+	function updateLoadingDots() {
+	    // 1. Cek apakah loading masih aktif
+	    if (!isLoading) return; 
+	
+	    const elNama = document.getElementById("titikKoordinatTampil");
+	    if (elNama) {
+	        // 2. Update hitungan titik (1, 2, 3)
+	        accDots = (accDots % 3) + 1; 
+	        elNama.value = "Sedang update koordinat" + ".".repeat(accDots);
+	    }
+	
+	    // 4. Panggil kembali fungsi ini setelah 500ms
+	    setTimeout(updateLoadingDots, 500);
+	}
 
 document.addEventListener("DOMContentLoaded", () => {
     const statusEl = document.getElementById("status");
