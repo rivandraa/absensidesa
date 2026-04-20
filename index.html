@@ -864,15 +864,11 @@ function updateGPSDisplay(text) {
 function startGPSLoading() {
     animatingGPS = true;
 
-    const dotsArr = ["", ".", "..", "..."];
-    let i = 0;
-
     stopGPSLoading();
 
     gpsLoadingInterval = setInterval(() => {
-        updateGPSDisplay("Sedang memperbarui lokasi" + dotsArr[i]);
-        i = (i + 1) % dotsArr.length;
-    }, 600);
+        updateGPSDisplay(`Sedang memperbarui lokasi${".".repeat(accDots)}`);
+    }
 }
 
 function stopGPSLoading() {
