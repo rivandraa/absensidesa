@@ -38,7 +38,6 @@
     
     const match = ua.match(/APP_TOKEN=([^;]+)/);
     const token = match ? match[1] : null;
-    const isAndroidApp = token !== null;
 
     // 1. Cek apakah ini Aplikasi resmi Mas (v1.2.0)
     const isAndroidApp = token !== null; // Mengetahui ini App (v1.2.0 ke atas)
