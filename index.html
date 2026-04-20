@@ -792,6 +792,7 @@ let lastTargetLocation = null;
 let areaErrorActive = false;
 let lastInsideArea = null;
 let fetchRequestId = 0;
+let dots = 0;
 
 let targetLocation = null;
 let gpsSystemActive = false;
@@ -864,10 +865,9 @@ function updateGPSDisplay(text) {
 function startGPSLoading() {
     animatingGPS = true;
     stopGPSLoading();
-
     gpsLoadingInterval = setInterval(() => {
-        accDots = (accDots % 3) + 1; 
-        updateGPSDisplay(`Sedang memperbarui lokasi${".".repeat(accDots)}`);
+        dots = (dots + 1) % 4;
+        updateGPSDisplay("Sedang mencari lokasi" + ".".repeat(dots));
     }, 500);
 }
 
