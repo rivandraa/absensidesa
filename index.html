@@ -886,8 +886,13 @@ function forceUpdateDistanceUI(lat, lon, acc) {
     let displayText = `Lokasi Anda : ${currentLat.toFixed(6)},${currentLon.toFixed(6)}`;
     displayText += `\nTingkat Akurasi : ${acc.toFixed(0)} Meter | > ${MAX_ACCURACY} Meter`;
 
+	// Baris Tambahan (Opsional): Animasi Akurasi
+    if (acc && acc > MAX_ACCURACY) {
+        displayText += `\nSedang meningkatkan akurasi${".".repeat(accDots)}`;
+    }
+	
     // 3. Logika Prioritas Tinggi (Status Absensi)
-    if (status === "hadir" || status === "pulang" || status === "wfh") {
+    if (status === "hadir" || status === "wfh") {
         
         // JIKA LOKASI BEBAS: Langsung keluar dari fungsi (Sangat Cepat)
         if (namaLokasi === "-") {
@@ -901,7 +906,7 @@ function forceUpdateDistanceUI(lat, lon, acc) {
         
         if (!hasTargetData) {
             lastInsideArea = false;
-            displayText += `\nSedang menghitung jarak anda dengan titik koordinat absensi`;
+            displayText += `\nSedang menghitung jarak anda dengan titik koordinat absensi${".".repeat(accDots)}`;`;
             updateGPSDisplay(displayText);
             return; // Berhenti di sini agar tidak memproses kode di bawahnya
         }
