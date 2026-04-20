@@ -1198,7 +1198,7 @@ function updateLoadingDots() {
     const elNama = document.getElementById("titikKoordinatTampil");
     if (elNama) {
         // Pakai loadDots, jangan accDots!
-        loadDots = (loadDots % 3) + 1; 
+        loadDots = (loadDots + 1) % 4;
         elNama.value = "Sedang update koordinat" + ".".repeat(loadDots);
     }
 
