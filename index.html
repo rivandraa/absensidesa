@@ -792,7 +792,6 @@ let lastTargetLocation = null;
 let areaErrorActive = false;
 let lastInsideArea = null;
 let fetchRequestId = 0;
-let dots = 0;
 
 let targetLocation = null;
 let gpsSystemActive = false;
@@ -852,6 +851,8 @@ function resetGPSState() {
 // =====================================================
 // UI UPDATE & ANIMATION
 // =====================================================
+let dots = 0;
+
 function updateGPSDisplay(text) {
     const gpsDiv = document.getElementById("gps");
     const gpsHidden = document.getElementById("gpsHidden");
@@ -867,7 +868,7 @@ function startGPSLoading() {
     stopGPSLoading();
     gpsLoadingInterval = setInterval(() => {
         dots = (dots + 1) % 4;
-        updateGPSDisplay("Sedang mencari lokasi" + ".".repeat(dots));
+        updateGPSDisplay("Sedang memperbarui lokasi" + ".".repeat(dots));
     }, 500);
 }
 
@@ -1189,21 +1190,20 @@ function startGPSMonitoring(onReady) {
 
 // ====== EVENT LISTENER STATUS ======
 let isLoading = false; // Gembok global
+let loadDots = 0;  // Khusus untuk Loading Dots
 
-	function updateLoadingDots() {
-	    // 1. Cek apakah loading masih aktif
-	    if (!isLoading) return; 
-	
-	    const elNama = document.getElementById("titikKoordinatTampil");
-	    if (elNama) {
-	        // 2. Update hitungan titik (1, 2, 3)
-	        accDots = (accDots % 3) + 1; 
-	        elNama.value = "Sedang update koordinat" + ".".repeat(accDots);
-	    }
-	
-	    // 4. Panggil kembali fungsi ini setelah 500ms
-	    setTimeout(updateLoadingDots, 500);
-	}
+function updateLoadingDots() {
+    if (!isLoading) return; 
+
+    const elNama = document.getElementById("titikKoordinatTampil");
+    if (elNama) {
+        // Pakai loadDots, jangan accDots!
+        loadDots = (loadDots % 3) + 1; 
+        elNama.value = "Sedang update koordinat" + ".".repeat(loadDots);
+    }
+
+    setTimeout(updateLoadingDots, 500);
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     const statusEl = document.getElementById("status");
