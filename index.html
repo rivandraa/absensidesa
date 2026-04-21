@@ -20,14 +20,6 @@
     const isSafariIphone  = /iPhone/i.test(ua) && /Safari/i.test(ua) && !/CriOS/i.test(ua);
 
     // ==========================================
-    // LOGIKA 1: CEK UPDATE (Khusus Pengguna App Resmi v1)
-    // ==========================================
-    if (isAndroidApp && !isValidApp) {
-        setTimeout(showUpdatePopup, 500);
-        return; // Munculkan popup update, jangan lanjut ke blokir
-    }
-
-    // ==========================================
     // BAGIAN PENDUKUNG (Fungsi-fungsi Update)
     // ==========================================
     let countdownInterval = null;
