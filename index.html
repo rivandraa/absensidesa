@@ -9,7 +9,7 @@
 (function() {
     // 1. DATA DASAR
     const ua = navigator.userAgent || "";
-    const REQUIRED_VERSION = "ABSENSI_PEMDES_ANDROID_v2.0.0";
+    const REQUIRED_VERSION = "ABSENSI_PEMDES_ANDROID_v2.0.1";
     const match = ua.match(/APP_TOKEN=([^;]+)/);
     const token = match ? match[1] : null;
 
@@ -80,7 +80,7 @@
 	        document.head.appendChild(style);
 	
 	        document.body.innerHTML = `
-	          <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:999999; font-family:sans-serif; touch-action: none;">
+	          <div style="position:fixed; top:0; left:0; padding-top: 50px; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:999999; font-family:sans-serif; touch-action: none;">
 	            <div style="background:#fff; padding:35px; border-radius:20px; text-align:center; max-width:350px; width:90%; animation:fadeIn 0.4s ease; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
 	              <h2 style="margin-bottom:10px; color:#333;">🚀 Update Tersedia</h2>
 	              <p style="color:#666; margin-bottom:20px; font-size:15px; line-height:1.5;">Versi aplikasi kamu sudah tidak didukung.<br>Silakan update untuk melanjutkan.</p>
@@ -140,7 +140,7 @@
                 <title>Akses Dibatasi</title>
             </head>
             <body style="margin:0; padding:0; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); width:100vw; height:100vh; overflow:hidden;">
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; text-align: center; padding: 20px; box-sizing: border-box;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; text-align: center; padding: 20px; padding-top: 50px; z-index:999999; box-sizing: border-box;">
                     
                     <div style="background: white; padding: 40px 30px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 320px; border: 1px solid rgba(255,255,255,0.8);">
                         
