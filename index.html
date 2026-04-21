@@ -40,7 +40,7 @@
     const token = match ? match[1] : null;
 
     // 1. Cek apakah ini Aplikasi resmi Mas (v1.2.0)
-    const isAndroidApp = token !== null; // Mengetahui ini App (v1.2.0 ke atas)
+    const isAndroidApp = token !== null; // Mengetahui ini App
     const isValidApp   = token === REQUIRED_VERSION; // Mengetahui ini App yang BENAR
 
     // 3. Cek Chrome di Android (Bukan dari dalam aplikasi/WebView lain)
@@ -53,7 +53,7 @@
 	// ==========================================
     // LOGIKA PEMBLOKIRAN TOTAL (FIXED)
     // ==========================================
-    if (!isSafariIphone && !isValidApp) {
+    if (!isSafariIphone && !isAndroidChrome && !isValidApp) {
         document.body.innerHTML = `
 			<div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
 			    
@@ -82,7 +82,7 @@
         `;
         window.stop(); // Hentikan pemuatan halaman
         throw new Error("Akses diblokir: Versi tidak sesuai.");
-    } */
+    }
 	
     // ==========================================
     // BAGIAN 1: SISTEM UPDATE (Standalone)
@@ -90,6 +90,7 @@
     // Bagian ini hanya bertugas mengecek versi 
     // dan menjalankan proses download APK.
     // ==========================================
+    
     let countdownInterval = null;
     let isUpdating = false;
 
@@ -120,7 +121,7 @@
         isUpdating = true;
         if (countdownInterval) clearInterval(countdownInterval);
         document.body.style.pointerEvents = "none";
-        const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v2.0.0/Absensi.Pemdes.Galungan.v2.0.0.apk?t=" + new Date().getTime();
+        const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v1.3.0/Absensi.Bumdesa.Galungan.v1.3.0.apk?t=" + new Date().getTime();
 
         if (window.UpdateBridge) {
             UpdateBridge.downloadUpdate(apkUrl);
