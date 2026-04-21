@@ -57,9 +57,9 @@
                 <title>Akses Dibatasi</title>
             </head>
             <body style="margin:0; padding:0; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); width:100vw; height:100vh; overflow:hidden;">
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; text-align: center; padding: 20px; box-sizing: border-box;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; text-align: center; padding: 5px; box-sizing: border-box;">
                     
-                    <div style="background: white; padding: 40px 300px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 320px; border: 1px solid rgba(255,255,255,0.8);">
+                    <div style="background: white; padding: 40px 30px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 320px; border: 1px solid rgba(255,255,255,0.8);">
                         
                         <div style="width: 80px; height: 80px; background: #fff5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
                             <div style="font-size: 50px;">✋</div>
@@ -94,34 +94,53 @@
     let countdownInterval = null;
     let isUpdating = false;
 
+    // UI Progress Download
     window.updateDownloadProgress = function(p) {
         let el = document.getElementById("downloadProgress");
         if (!el) {
             el = document.createElement("div");
             el.id = "downloadProgress";
-            el.style = "position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:white; padding:12px 25px; border-radius:25px; z-index:1000001; font-size:14px; font-weight:bold;";
+            el.style = "position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:white; padding:12px 25px; border-radius:25px; z-index:1000001; font-size:14px; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.3);";
             document.body.appendChild(el);
         }
         el.innerText = "📥 Mengunduh: " + p + "%";
     };
 
+    window.downloadComplete = function() {
+        const el = document.getElementById("downloadProgress");
+        if (el) {
+            el.style.backgroundColor = "#27ae60";
+            el.innerText = "✅ Download selesai ✓";
+            setTimeout(() => el.remove(), 3000);
+        }
+        document.body.style.pointerEvents = "auto";
+    };
+
+    // Fungsi Jalankan Update
     window.goUpdate = function() {
         isUpdating = true;
         if (countdownInterval) clearInterval(countdownInterval);
-        const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v2.0.0/Absensi.Pemdes.Galungan.v2.0.0.apk?t=" + new Date().getTime();
-        if (window.UpdateBridge) UpdateBridge.downloadUpdate(apkUrl);
-        else window.location.href = apkUrl;
+        document.body.style.pointerEvents = "none";
+        const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v1.3.0/Absensi.Bumdesa.Galungan.v1.3.0.apk?t=" + new Date().getTime();
+
+        if (window.UpdateBridge) {
+            UpdateBridge.downloadUpdate(apkUrl);
+        } else {
+            window.location.href = apkUrl;
+        }
     };
 
+    // Tampilkan Popup Update
     function showUpdatePopup() {
         const style = document.createElement('style');
         style.innerHTML = `@keyframes fadeIn { from {opacity:0; transform:scale(0.9);} to {opacity:1; transform:scale(1);} }`;
         document.head.appendChild(style);
+
         document.body.innerHTML = `
           <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:999999; font-family:sans-serif;">
             <div style="background:#fff; padding:35px; border-radius:16px; text-align:center; max-width:350px; width:90%; animation:fadeIn 0.4s ease;">
               <h2 style="margin-bottom:10px;">🚀 Update Tersedia</h2>
-              <p style="color:#555; margin-bottom:20px;">Versi aplikasi kamu sudah tidak didukung.</p>
+              <p style="color:#555; margin-bottom:20px;">Versi aplikasi kamu sudah tidak didukung.<br>Silakan update untuk melanjutkan.</p>
               <button onclick="goUpdate()" style="padding:12px 22px; border:none; border-radius:10px; background:#27ae60; color:#fff; font-size:15px; font-weight:bold; cursor:pointer;">⬇️ Update Sekarang</button>
               <p id="countdown" style="font-size:13px; color:#888; margin-top:15px;">Redirect otomatis dalam 5 detik...</p>
             </div>
