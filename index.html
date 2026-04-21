@@ -7,52 +7,51 @@
 
 <script>
 (function() {
-    // 1. AMBIL DATA USER AGENT & TOKEN
+    // 1. DATA DASAR
     const ua = navigator.userAgent || "";
     const REQUIRED_VERSION = "ABSENSI_PEMDES_ANDROID_v2.0.0";
     const match = ua.match(/APP_TOKEN=([^;]+)/);
     const token = match ? match[1] : null;
 
     // 2. STATUS IDENTIFIKASI
-    const isAndroidApp   = token !== null; 
-    const isValidApp     = token === REQUIRED_VERSION;
+    const isAndroidApp    = token !== null; 
+    const isValidApp      = token === REQUIRED_VERSION;
     const isAndroidChrome = /Android/i.test(ua) && /Chrome/i.test(ua) && !/Version\//i.test(ua);
-    const isSafariIphone = /iPhone/i.test(ua) && /Safari/i.test(ua) && !/CriOS/i.test(ua);
+    const isSafariIphone  = /iPhone/i.test(ua) && /Safari/i.test(ua) && !/CriOS/i.test(ua);
 
     // ==========================================
-    // LOGIKA 1: CEK UPDATE (Untuk Pengguna App Resmi tapi Versi Lama)
+    // LOGIKA UTAMA: SIAPA YANG BOLEH MASUK?
     // ==========================================
+    
+    // KONDISI A: Dia pakai App Resmi tapi versi jadul (v1.0.0)
     if (isAndroidApp && !isValidApp) {
-        // Jika dia pakai aplikasi tapi token salah (versi lama), jalankan popup update
-        // Kita tidak memakai window.stop() di sini agar fungsi di bawah bisa jalan
         setTimeout(showUpdatePopup, 500);
-        return; // Keluar dari fungsi agar tidak lanjut ke blokir Chrome/Safari
+        return; // Berhenti di sini, tampilkan popup update
     }
 
-    // ==========================================
-    // LOGIKA 2: PEMBLOKIRAN TOTAL (Untuk Laptop/Browser Ilegal)
-    // ==========================================
-    // Jika BUKAN iPhone, BUKAN Chrome Android, dan BUKAN Aplikasi Resmi
-    if (!isSafariIphone && !isAndroidChrome && !isValidApp) {
-        document.body.innerHTML = `
-            <div style="position:fixed; top:0; left:0; width:100%; height:100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); z-index:999999;">
-                <div style="background: white; padding: 40px 30px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 320px; border: 1px solid rgba(255,255,255,0.8);">
-                    <div style="width: 80px; height: 80px; background: #fff5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-                        <div style="font-size: 50px;">✋</div>
-                    </div>
-                    <h2 style="color: #2d3748; margin: 0 0 10px 0; font-size: 22px; font-weight: 700;">Akses Tidak Diizinkan</h2>
-                    <p style="color: #718096; line-height: 1.5; font-size: 15px; margin-bottom: 25px;">
-                        Maaf, perangkat Anda tidak didukung. Mohon gunakan Aplikasi Resmi v2.0.0.
-                    </p>
-                    <div style="background: #edf2f7; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0;">
-                        <p style="margin: 0; font-size: 13px; color: #4a5568; font-weight: 500;">Butuh bantuan?</p>
-                        <p style="margin: 5px 0 0 0; font-size: 14px; color: #3182ce; font-weight: 600;">Hubungi Administrator</p>
+    // KONDISI B: DIA BUKAN SIAPA-SIAPA (Bukan App v2, Bukan Chrome HP, Bukan Safari iPhone)
+    // Ini yang biasanya bikin lolos kalau logikanya terbalik.
+    if (!isValidApp && !isAndroidChrome && !isSafariIphone) {
+        
+        // PAKSA HAPUS SELURUH HALAMAN (Sampai ke akar)
+        document.documentElement.innerHTML = `
+            <head><title>Akses Ditolak</title></head>
+            <body style="margin:0; padding:0; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; padding: 20px; font-family: sans-serif;">
+                    <div style="background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 320px;">
+                        <div style="font-size: 60px; margin-bottom: 20px;">✋</div>
+                        <h2 style="color: #2d3748; margin-bottom: 10px;">Akses Dibatasi</h2>
+                        <p style="color: #718096; font-size: 15px; line-height: 1.5;">Silakan gunakan Aplikasi Resmi atau Browser Chrome di Smartphone Anda.</p>
+                        <div style="margin-top: 25px; background: #edf2f7; padding: 15px; border-radius: 15px;">
+                            <p style="margin: 0; font-size: 13px; color: #4a5568;">Hubungi IT Desa Galungan</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </body>
         `;
-        window.stop(); 
-        throw new Error("Akses Ditolak");
+        window.stop();
+        if(window.stop) window.stop(); // Double kill untuk hentikan loading
+        throw new Error("Akses Ilegal!");
     }
 
     // ==========================================
