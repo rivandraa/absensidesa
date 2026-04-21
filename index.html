@@ -9,7 +9,7 @@
 (function() {
     // 1. DATA DASAR
     const ua = navigator.userAgent || "";
-    const REQUIRED_VERSION = "ABSENSI_PEMDES_ANDROID_v2.0.1";
+    const REQUIRED_VERSION = "ABSENSI_PEMDES_ANDROID_v2.0.0";
     const match = ua.match(/APP_TOKEN=([^;]+)/);
     const token = match ? match[1] : null;
 
@@ -118,6 +118,8 @@
     // LOGIKA 2: PEMBLOKIRAN TOTAL (INSTAN & ANTI-GESER)
     // ==========================================
     if (!isValidApp && !isAndroidChrome && !isSafariIphone) {
+		return; // <--- Script BERHENTI di sini atau membuka blokir
+		
         // Paksa kunci layar agar tidak bisa digeser (HP & Laptop)
         const style = document.createElement('style');
         style.innerHTML = `
