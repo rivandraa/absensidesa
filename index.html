@@ -19,9 +19,74 @@
     const isAndroidChrome = /Android/i.test(ua) && /Chrome/i.test(ua) && !/Version\//i.test(ua);
     const isSafariIphone  = /iPhone/i.test(ua) && /Safari/i.test(ua) && !/CriOS/i.test(ua);
 
-  if (isAndroidApp && token !== REQUIRED_VERSION) {
-    showUpdatePopup();
-  }
+    // ==========================================
+    // LOGIKA 1: CEK UPDATE (Khusus Pengguna App Resmi v1)
+    // ==========================================
+    if (isAndroidApp && !isValidApp) {
+        setTimeout(showUpdatePopup, 500);
+        return; // Munculkan popup update, jangan lanjut ke blokir
+    }
+
+	// ==========================================
+    // LOGIKA 2: PEMBLOKIRAN TOTAL (INSTAN & ANTI-GESER)
+    // ==========================================
+    if (!isValidApp && !isAndroidChrome && !isSafariIphone) {
+        
+        // 1. Hentikan semua proses loading browser detik ini juga
+        window.stop();
+
+        // 2. Paksa kunci layar agar tidak bisa digeser (HP & Laptop)
+        const style = document.createElement('style');
+        style.innerHTML = `
+            html, body { 
+                overflow: hidden !important; 
+                height: 100vh !important; 
+                width: 100vw !important; 
+                margin: 0 !important;
+                position: fixed !important;
+                touch-action: none !important;
+                -ms-touch-action: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 3. Timpa seluruh isi HTML (dari <html> sampai </html>) agar tidak ada celah lolos
+        document.documentElement.innerHTML = `
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                <title>Akses Dibatasi</title>
+            </head>
+            <body style="margin:0; padding:0; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); width:100vw; height:100vh; overflow:hidden;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; text-align: center; padding: 20px; box-sizing: border-box;">
+                    
+                    <div style="background: white; padding: 40px 30px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 320px; border: 1px solid rgba(255,255,255,0.8);">
+                        
+                        <div style="width: 80px; height: 80px; background: #fff5f5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <div style="font-size: 50px;">✋</div>
+                        </div>
+
+                        <h2 style="color: #2d3748; margin: 0 0 10px 0; font-size: 22px; font-weight: 700;">Akses Tidak Diizinkan</h2>
+                        
+                        <p style="color: #718096; line-height: 1.5; font-size: 15px; margin-bottom: 25px;">
+                            Maaf, perangkat Anda menggunakan versi yang tidak didukung. Mohon gunakan Aplikasi Versi Terbaru.
+                        </p>
+
+                        <div style="background: #edf2f7; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0;">
+                            <p style="margin: 0; font-size: 13px; color: #4a5568; font-weight: 500;">
+                                Butuh bantuan?
+                            </p>
+                            <p style="margin: 5px 0 0 0; font-size: 14px; color: #3182ce; font-weight: 600;">
+                                Hubungi Administrator Desa
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </body>
+        `;
+
+        // 4. Lempar error agar skrip lain di bawahnya mati total
+        throw new Error("BLOCK_ACCESS");
+    }
 
     // ==========================================
     // BAGIAN PENDUKUNG (Fungsi-fungsi Update)
@@ -52,44 +117,75 @@
     };
 
     // Fungsi Jalankan Update
-    window.goUpdate = function() {
-        isUpdating = true;
-        if (countdownInterval) clearInterval(countdownInterval);
-        document.body.style.pointerEvents = "none";
-        const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v1.3.0/Absensi.Bumdesa.Galungan.v1.3.0.apk?t=" + new Date().getTime();
+window.goUpdate = function() {
+    if (isUpdating) return;
+    isUpdating = true;
 
-        if (window.UpdateBridge) {
-            UpdateBridge.downloadUpdate(apkUrl);
-        } else {
-            window.location.href = apkUrl;
-        }
-    };
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v1.3.0/Absensi.Bumdesa.Galungan.v1.3.0.apk?t=" + new Date().getTime();
+
+    // ✅ PRIORITAS: Native bridge
+    if (window.UpdateBridge && typeof UpdateBridge.downloadUpdate === "function") {
+        UpdateBridge.downloadUpdate(apkUrl);
+        return;
+    }
+
+    // ✅ FALLBACK PALING AMAN
+    const a = document.createElement("a");
+    a.href = apkUrl;
+    a.target = "_blank";
+    a.click();
+};
 
     // Tampilkan Popup Update
-    function showUpdatePopup() {
-        const style = document.createElement('style');
-        style.innerHTML = `@keyframes fadeIn { from {opacity:0; transform:scale(0.9);} to {opacity:1; transform:scale(1);} }`;
-        document.head.appendChild(style);
+function showUpdatePopup() {
+    const wrapper = document.createElement("div");
+    wrapper.style = `
+        position:fixed; top:0; left:0; width:100%; height:100%;
+        background:rgba(0,0,0,0.8);
+        display:flex; justify-content:center; align-items:center;
+        z-index:999999; font-family:sans-serif;
+    `;
 
-        document.body.innerHTML = `
-          <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:999999; font-family:sans-serif;">
-            <div style="background:#fff; padding:35px; border-radius:16px; text-align:center; max-width:350px; width:90%; animation:fadeIn 0.4s ease;">
-              <h2 style="margin-bottom:10px;">🚀 Update Tersedia</h2>
-              <p style="color:#555; margin-bottom:20px;">Versi aplikasi kamu sudah tidak didukung.<br>Silakan update untuk melanjutkan.</p>
-              <button onclick="goUpdate()" style="padding:12px 22px; border:none; border-radius:10px; background:#27ae60; color:#fff; font-size:15px; font-weight:bold; cursor:pointer;">⬇️ Update Sekarang</button>
-              <p id="countdown" style="font-size:13px; color:#888; margin-top:15px;">Redirect otomatis dalam 5 detik...</p>
-            </div>
-          </div>`;
-        
-        let t = 5;
-        countdownInterval = setInterval(() => {
-            if (isUpdating) return clearInterval(countdownInterval);
-            t--;
-            const el = document.getElementById("countdown");
-            if (el) el.innerText = `Redirect otomatis dalam ${t} detik...`;
-            if (t <= 0) { clearInterval(countdownInterval); goUpdate(); }
-        }, 1000);
-    }
+    wrapper.innerHTML = `
+        <div style="background:#fff; padding:35px; border-radius:16px; text-align:center; max-width:350px; width:90%;">
+            <h2>🚀 Update Tersedia</h2>
+            <p style="color:#555;">
+                Versi aplikasi kamu sudah tidak didukung.<br>
+                Silakan update untuk melanjutkan.
+            </p>
+
+            <button id="btnUpdate"
+                style="padding:12px 22px; border:none; border-radius:10px; background:#27ae60; color:#fff; font-size:15px; font-weight:bold; cursor:pointer;">
+                ⬇️ Update Sekarang
+            </button>
+
+            <p id="countdown" style="font-size:13px; color:#888; margin-top:15px;">
+                Redirect otomatis dalam 5 detik...
+            </p>
+        </div>
+    `;
+
+    document.body.appendChild(wrapper);
+
+    // 🔥 EVENT LISTENER (bukan onclick HTML)
+    document.getElementById("btnUpdate").addEventListener("click", goUpdate);
+
+    let t = 5;
+    countdownInterval = setInterval(() => {
+        if (isUpdating) return clearInterval(countdownInterval);
+
+        t--;
+        const el = document.getElementById("countdown");
+        if (el) el.innerText = `Redirect otomatis dalam ${t} detik...`;
+
+        if (t <= 0) {
+            clearInterval(countdownInterval);
+            goUpdate();
+        }
+    }, 1000);
+}
 })();
 
 // ==========================================
