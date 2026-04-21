@@ -120,9 +120,9 @@
     if (!isValidApp && !isAndroidChrome && !isSafariIphone) {
         // Paksa kunci layar agar tidak bisa digeser (HP & Laptop)
 		// Kunci gaya body asli
-        document.body.style.margin = "0";
-        document.body.style.padding = "0";
-        document.body.style.overflow = "hidden";
+		document.body.style.setProperty("margin", "0", "important");
+        document.body.style.setProperty("padding", "0", "important");
+        document.body.style.setProperty("overflow", "hidden", "important");
 
         // Timpa isi BODY saja
         document.body.innerHTML = `
