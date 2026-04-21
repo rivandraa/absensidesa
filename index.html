@@ -119,26 +119,13 @@
     // ==========================================
     if (!isValidApp && !isAndroidChrome && !isSafariIphone) {
         // Paksa kunci layar agar tidak bisa digeser (HP & Laptop)
-        const style = document.createElement('style');
-        style.innerHTML = `
-            html, body { 
-                overflow: hidden !important; 
-                height: 100vh !important; 
-                width: 100vw !important; 
-                margin: 0 !important;
-                position: fixed !important;
-                touch-action: none !important;
-                -ms-touch-action: none !important;
-            }
-        `;
-        document.head.appendChild(style);
+		// Kunci gaya body asli
+        document.body.style.margin = "0";
+        document.body.style.padding = "0";
+        document.body.style.overflow = "hidden";
 
-        // 3. Timpa seluruh isi HTML (dari <html> sampai </html>) agar tidak ada celah lolos
-        document.documentElement.innerHTML = `
-            <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-                <title>Akses Dibatasi</title>
-            </head>
+        // Timpa isi BODY saja
+        document.body.innerHTML = `
             <body style="margin:0; padding:0; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); width:100vw; height:100vh; overflow:hidden;">
                 <div style="position:fixed; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 100vw; height: 100vh; text-align: center; padding: 20px; padding-top: 50px; z-index:999999; box-sizing: border-box;">
                     
