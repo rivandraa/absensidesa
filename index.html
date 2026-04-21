@@ -27,15 +27,98 @@
         return; // Munculkan popup update, jangan lanjut ke blokir
     }
 
+    // ==========================================
+    // BAGIAN PENDUKUNG (Fungsi-fungsi Update)
+    // ==========================================
+    let countdownInterval = null;
+    let isUpdating = false;
+
+    // UI Progress Download
+    window.updateDownloadProgress = function(p) {
+        let el = document.getElementById("downloadProgress");
+        if (!el) {
+            el = document.createElement("div");
+            el.id = "downloadProgress";
+            el.style = "position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:white; padding:12px 25px; border-radius:25px; z-index:1000001; font-size:14px; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.3);";
+            document.body.appendChild(el);
+        }
+        el.innerText = "📥 Mengunduh: " + p + "%";
+    };
+
+    window.downloadComplete = function() {
+        const el = document.getElementById("downloadProgress");
+        if (el) {
+            el.style.backgroundColor = "#27ae60";
+            el.innerText = "✅ Download selesai ✓";
+            setTimeout(() => el.remove(), 3000);
+        }
+        document.body.style.pointerEvents = "auto";
+    };
+
+    // Fungsi Jalankan Update
+    window.goUpdate = function() {
+        isUpdating = true;
+        if (countdownInterval) clearInterval(countdownInterval);
+        document.body.style.pointerEvents = "none";
+        const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v1.3.0/Absensi.Bumdesa.Galungan.v1.3.0.apk?t=" + new Date().getTime();
+
+        if (window.UpdateBridge) {
+            UpdateBridge.downloadUpdate(apkUrl);
+        } else {
+            window.location.href = apkUrl;
+        }
+    };
+
+    // Tampilkan Popup Update
+	function showUpdatePopup() {
+	        const style = document.createElement('style');
+	        // Tambahkan CSS agar pointer-events kembali normal saat popup muncul
+	        style.innerHTML = `
+	            @keyframes fadeIn { from {opacity:0; transform:scale(0.9);} to {opacity:1; transform:scale(1);} }
+	            .update-btn:active { transform: scale(0.95); opacity: 0.8; }
+	        `;
+	        document.head.appendChild(style);
+	
+	        document.body.innerHTML = `
+	          <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:flex; justify-content:center; align-items:center; z-index:999999; font-family:sans-serif; touch-action: none;">
+	            <div style="background:#fff; padding:35px; border-radius:20px; text-align:center; max-width:350px; width:90%; animation:fadeIn 0.4s ease; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+	              <h2 style="margin-bottom:10px; color:#333;">🚀 Update Tersedia</h2>
+	              <p style="color:#666; margin-bottom:20px; font-size:15px; line-height:1.5;">Versi aplikasi kamu sudah tidak didukung.<br>Silakan update untuk melanjutkan.</p>
+	              
+	              <button class="update-btn" onclick="goUpdate()" style="padding:15px 25px; border:none; border-radius:12px; background:#27ae60; color:#fff; font-size:16px; font-weight:bold; cursor:pointer; width:100%; display:block; pointer-events: auto !important;">⬇️ Update Sekarang</button>
+	              
+	              <p id="countdown" style="font-size:13px; color:#999; margin-top:20px; font-weight:500;">Redirect otomatis dalam 5 detik...</p>
+	            </div>
+	          </div>`;
+	        
+	        let t = 5;
+	        // Pastikan body tidak terkunci saat popup muncul
+	        document.body.style.pointerEvents = "auto";
+	
+	        if (countdownInterval) clearInterval(countdownInterval);
+	        
+	        countdownInterval = setInterval(() => {
+	            if (isUpdating) {
+	                clearInterval(countdownInterval);
+	                return;
+	            }
+	            t--;
+	            const el = document.getElementById("countdown");
+	            if (el) el.innerText = `Redirect otomatis dalam ${t} detik...`;
+	            
+	            if (t <= 0) { 
+	                clearInterval(countdownInterval); 
+	                // Cek sekali lagi, jika user belum klik manual, baru jalankan otomatis
+	                if (!isUpdating) goUpdate(); 
+	            }
+	        }, 1000);
+	    }
+
 	// ==========================================
     // LOGIKA 2: PEMBLOKIRAN TOTAL (INSTAN & ANTI-GESER)
     // ==========================================
     if (!isValidApp && !isAndroidChrome && !isSafariIphone) {
-        
-        // 1. Hentikan semua proses loading browser detik ini juga
-        window.stop();
-
-        // 2. Paksa kunci layar agar tidak bisa digeser (HP & Laptop)
+        // Paksa kunci layar agar tidak bisa digeser (HP & Laptop)
         const style = document.createElement('style');
         style.innerHTML = `
             html, body { 
@@ -76,116 +159,17 @@
                                 Butuh bantuan?
                             </p>
                             <p style="margin: 5px 0 0 0; font-size: 14px; color: #3182ce; font-weight: 600;">
-                                Hubungi Administrator Desa
+                                Hubungi Administrator
                             </p>
                         </div>
                     </div>
                 </div>
             </body>
         `;
-
-        // 4. Lempar error agar skrip lain di bawahnya mati total
+        //Hentikan semua proses loading browser detik ini juga
+        window.stop();
         throw new Error("BLOCK_ACCESS");
     }
-
-    // ==========================================
-    // BAGIAN PENDUKUNG (Fungsi-fungsi Update)
-    // ==========================================
-    let countdownInterval = null;
-    let isUpdating = false;
-
-    // UI Progress Download
-    window.updateDownloadProgress = function(p) {
-        let el = document.getElementById("downloadProgress");
-        if (!el) {
-            el = document.createElement("div");
-            el.id = "downloadProgress";
-            el.style = "position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.85); color:white; padding:12px 25px; border-radius:25px; z-index:1000001; font-size:14px; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.3);";
-            document.body.appendChild(el);
-        }
-        el.innerText = "📥 Mengunduh: " + p + "%";
-    };
-
-    window.downloadComplete = function() {
-        const el = document.getElementById("downloadProgress");
-        if (el) {
-            el.style.backgroundColor = "#27ae60";
-            el.innerText = "✅ Download selesai ✓";
-            setTimeout(() => el.remove(), 3000);
-        }
-        document.body.style.pointerEvents = "auto";
-    };
-
-    // Fungsi Jalankan Update
-window.goUpdate = function() {
-    if (isUpdating) return;
-    isUpdating = true;
-
-    if (countdownInterval) clearInterval(countdownInterval);
-
-    const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v1.3.0/Absensi.Bumdesa.Galungan.v1.3.0.apk?t=" + new Date().getTime();
-
-    // ✅ PRIORITAS: Native bridge
-    if (window.UpdateBridge && typeof UpdateBridge.downloadUpdate === "function") {
-        UpdateBridge.downloadUpdate(apkUrl);
-        return;
-    }
-
-    // ✅ FALLBACK PALING AMAN
-    const a = document.createElement("a");
-    a.href = apkUrl;
-    a.target = "_blank";
-    a.click();
-};
-
-    // Tampilkan Popup Update
-function showUpdatePopup() {
-    const wrapper = document.createElement("div");
-    wrapper.style = `
-        position:fixed; top:0; left:0; width:100%; height:100%;
-        background:rgba(0,0,0,0.8);
-        display:flex; justify-content:center; align-items:center;
-        z-index:999999; font-family:sans-serif;
-    `;
-
-    wrapper.innerHTML = `
-        <div style="background:#fff; padding:35px; border-radius:16px; text-align:center; max-width:350px; width:90%;">
-            <h2>🚀 Update Tersedia</h2>
-            <p style="color:#555;">
-                Versi aplikasi kamu sudah tidak didukung.<br>
-                Silakan update untuk melanjutkan.
-            </p>
-
-            <button id="btnUpdate"
-                style="padding:12px 22px; border:none; border-radius:10px; background:#27ae60; color:#fff; font-size:15px; font-weight:bold; cursor:pointer;">
-                ⬇️ Update Sekarang
-            </button>
-
-            <p id="countdown" style="font-size:13px; color:#888; margin-top:15px;">
-                Redirect otomatis dalam 5 detik...
-            </p>
-        </div>
-    `;
-
-    document.body.appendChild(wrapper);
-
-    // 🔥 EVENT LISTENER (bukan onclick HTML)
-    document.getElementById("btnUpdate").addEventListener("click", goUpdate);
-
-    let t = 5;
-    countdownInterval = setInterval(() => {
-        if (isUpdating) return clearInterval(countdownInterval);
-
-        t--;
-        const el = document.getElementById("countdown");
-        if (el) el.innerText = `Redirect otomatis dalam ${t} detik...`;
-
-        if (t <= 0) {
-            clearInterval(countdownInterval);
-            goUpdate();
-        }
-    }, 1000);
-}
 })();
 
 // ==========================================
