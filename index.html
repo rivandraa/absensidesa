@@ -722,18 +722,16 @@ async function loginUser() {
 
 /* FUNGSI STATUS */
 async function updateStatusOptions() {
-    console.log("RUN updateStatusOptions");
-
     const optHadir = document.getElementById('opt-hadir');
     const optIzin  = document.getElementById('opt-izin');
     const optSakit = document.getElementById('opt-sakit');
     const optDinas = document.getElementById('opt-dinas');
     const optPulang = document.getElementById('opt-pulang');
 
-    const userObj = userData || JSON.parse(sessionStorage.getItem('userData'));
+    const selectStatus = document.getElementById("status");
 
+    const userObj = userData || JSON.parse(sessionStorage.getItem('userData'));
     if (!userObj) {
-        console.log("userData belum siap, retry...");
         setTimeout(updateStatusOptions, 500);
         return;
     }
@@ -748,21 +746,40 @@ async function updateStatusOptions() {
         const sudahAbsenMasuk = data.sudahAbsenMasuk === true;
         const sudahPulang = data.sudahPulang === true;
 
-        // reset
-        if (optHadir) optHadir.style.display = 'none';
-        if (optIzin) optIzin.style.display  = 'none';
-        if (optSakit) optSakit.style.display = 'none';
-        if (optDinas) optDinas.style.display = 'none';
-        if (optPulang) optPulang.style.display = 'none';
+        // ===============================
+        // RESET SEMUA OPTION
+        // ===============================
+        [optHadir, optIzin, optSakit, optDinas, optPulang].forEach(opt => {
+            if (opt) {
+                opt.hidden = true;
+                opt.disabled = true;
+            }
+        });
+
+        // ===============================
+        // LOGIKA
+        // ===============================
 
         if (!sudahAbsenMasuk) {
-            if (optHadir) optHadir.style.display = 'block';
-            if (optIzin) optIzin.style.display  = 'block';
-            if (optSakit) optSakit.style.display = 'block';
-            if (optDinas) optDinas.style.display = 'block';
+            // tampilkan selain pulang
+            [optHadir, optIzin, optSakit, optDinas].forEach(opt => {
+                if (opt) {
+                    opt.hidden = false;
+                    opt.disabled = false;
+                }
+            });
 
         } else if (!sudahPulang) {
-            if (optPulang) optPulang.style.display = 'block';
+            // hanya pulang
+            if (optPulang) {
+                optPulang.hidden = false;
+                optPulang.disabled = false;
+            }
+
+        } else {
+            // sudah pulang → disable select
+            selectStatus.value = "";
+            selectStatus.disabled = true;
         }
 
     } catch (err) {
@@ -770,8 +787,16 @@ async function updateStatusOptions() {
     }
 }
 
+// ===============================
+// JALANKAN SAAT LOAD
+// ===============================
 window.addEventListener("load", function () {
     updateStatusOptions();
+
+    // backup trigger (hindari race condition userData)
+    setTimeout(() => {
+        updateStatusOptions();
+    }, 500);
 });
 
 
