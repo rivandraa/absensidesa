@@ -741,33 +741,21 @@ async function updateStatusOptions() {
 
         const sudahMasuk = ["HADIR", "WFH", "DINAS"].includes(lastStatus);
 
-        // ===============================
-        // LOGIKA YANG KAMU INGINKAN
-        // ===============================
+        // reset dulu (anti bug tampilan nyisa)
+        optHadir.style.display = 'none';
+        optIzin.style.display  = 'none';
+        optSakit.style.display = 'none';
+        optDinas.style.display = 'none';
+        optPulang.style.display = 'none';
 
         if (!sudahMasuk) {
-            // ❌ BELUM ABSEN
             optHadir.style.display = 'block';
             optIzin.style.display  = 'block';
             optSakit.style.display = 'block';
             optDinas.style.display = 'block';
-            optPulang.style.display = 'none';
 
         } else if (sudahMasuk && !sudahPulang) {
-            // ✅ SUDAH MASUK → HANYA PULANG
-            optHadir.style.display = 'none';
-            optIzin.style.display  = 'none';
-            optSakit.style.display = 'none';
-            optDinas.style.display = 'none';
             optPulang.style.display = 'block';
-
-        } else {
-            // ❌ SUDAH PULANG → SEMUA HILANG
-            optHadir.style.display = 'none';
-            optIzin.style.display  = 'none';
-            optSakit.style.display = 'none';
-            optDinas.style.display = 'none';
-            optPulang.style.display = 'none';
         }
 
     } catch (err) {
@@ -775,14 +763,17 @@ async function updateStatusOptions() {
     }
 }
 
-
-// Jalankan fungsi saat halaman dimuat
-$(document).ready(function() {
+// ===============================
+// JALANKAN SAAT LOAD
+// ===============================
+window.addEventListener("load", function () {
     updateStatusOptions();
-    
-    // Opsional: Cek setiap 1 menit jika user mendiamkan halaman di ambang jam 12
-    setInterval(updateStatusOptions, 1000); 
+
+    setTimeout(() => {
+        updateStatusOptions();
+    }, 500);
 });
+
 /* =========================================================================================================
     BAGIAN KODE GPS (DIV DISPLAY)
     Hanya menyesuaikan tampilan ke <div> + hidden input. Logika lain tetap dipertahankan.
