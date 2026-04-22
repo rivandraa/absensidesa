@@ -721,36 +721,76 @@ async function loginUser() {
 }
 
 /* FUNGSI STATUS */
-function updateStatusOptions() {
+async function updateStatusOptions() {
     const sekarang = new Date();
-    const jam = sekarang.getHours(); // Mengambil jam (0-23)
-    
-    const optHadir = document.getElementById('opt-hadir');
-	const optIzin = document.getElementById('opt-izin');
-	const optSakit = document.getElementById('opt-sakit');
-	const optDinas = document.getElementById('opt-dinas');
-    const optPulang = document.getElementById('opt-pulang');
-    const selectStatus = document.getElementById('status');
+    const jam = sekarang.getHours();
 
-	if (jam < 12) {
-	    // SEBELUM JAM 12 → tampilkan opsi MASUK
-	    if (optHadir) optHadir.style.display = 'block';
-	    if (optIzin) optIzin.style.display = 'block';
-	    if (optSakit) optSakit.style.display = 'block';
-	    if (optDinas) optDinas.style.display = 'block';
-	
-	    if (optPulang) optPulang.style.display = 'none';
-	
-	} else {
-	    // SETELAH JAM 12 → tampilkan PULANG
-	    if (optHadir) optHadir.style.display = 'none';
-	    if (optIzin) optIzin.style.display = 'none';
-	    if (optSakit) optSakit.style.display = 'none';
-	    if (optDinas) optDinas.style.display = 'none';
-	
-	    if (optPulang) optPulang.style.display = 'block';
-	}
+    const optHadir = document.getElementById('opt-hadir');
+    const optIzin  = document.getElementById('opt-izin');
+    const optSakit = document.getElementById('opt-sakit');
+    const optDinas = document.getElementById('opt-dinas');
+    const optPulang = document.getElementById('opt-pulang');
+
+    const userObj = userData || JSON.parse(sessionStorage.getItem('userData'));
+    if (!userObj) return;
+
+    try {
+        const url = `${GAS_URL}?action=getLastStatus&username=${encodeURIComponent(userObj.username)}&spreadsheetId=${encodeURIComponent(userObj.spreadsheetId)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        const lastStatus = (data.status || "").toUpperCase();
+
+        console.log("Status terakhir:", lastStatus);
+
+        const sudahMasuk = ["HADIR", "WFH", "DINAS"].includes(lastStatus);
+        const sudahPulang = lastStatus === "PULANG";
+
+        // ===============================
+        // LOGIKA UTAMA
+        // ===============================
+
+        if (!sudahMasuk) {
+            // ❌ BELUM ABSEN MASUK
+            if (optHadir) optHadir.style.display = 'block';
+            if (optIzin)  optIzin.style.display = 'block';
+            if (optSakit) optSakit.style.display = 'block';
+            if (optDinas) optDinas.style.display = 'block';
+            if (optPulang) optPulang.style.display = 'none';
+
+        } else if (sudahMasuk && !sudahPulang) {
+            // ✅ SUDAH MASUK → BOLEH PULANG
+
+            if (jam < 12) {
+                // masih boleh masuk
+                if (optHadir) optHadir.style.display = 'block';
+                if (optIzin)  optIzin.style.display = 'block';
+                if (optSakit) optSakit.style.display = 'block';
+                if (optDinas) optDinas.style.display = 'block';
+            } else {
+                // setelah jam 12
+                if (optHadir) optHadir.style.display = 'none';
+                if (optIzin)  optIzin.style.display = 'none';
+                if (optSakit) optSakit.style.display = 'none';
+                if (optDinas) optDinas.style.display = 'none';
+            }
+
+            if (optPulang) optPulang.style.display = 'block';
+
+        } else {
+            // ❌ SUDAH PULANG
+            if (optHadir) optHadir.style.display = 'none';
+            if (optIzin)  optIzin.style.display = 'none';
+            if (optSakit) optSakit.style.display = 'none';
+            if (optDinas) optDinas.style.display = 'none';
+            if (optPulang) optPulang.style.display = 'none';
+        }
+
+    } catch (err) {
+        console.error("Gagal ambil status:", err);
+    }
 }
+
 
 // Jalankan fungsi saat halaman dimuat
 $(document).ready(function() {
