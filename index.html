@@ -297,19 +297,24 @@ document.addEventListener("DOMContentLoaded", function() {
         </div>
 
         <!-- Status -->
-<select id="status" class="form-control" disabled>
-    <option value="" disabled selected>Pilih Status Absen</option>
+<div class="form-group">
+    <label>📋 Status Absen</label>
+    <select id="status" class="form-control" disabled>
 
-    <option id="opt-loading" hidden>⏳ Mengambil status...</option>
+        <!-- default -->
+        <option value="" disabled selected>Pilih Status Absen</option>
 
-    <option value="Hadir" id="opt-hadir" hidden>Hadir</option>
-    <option value="Pulang" id="opt-pulang" hidden>Pulang</option>
-    <option value="Izin" id="opt-izin" hidden>Izin</option>
-    <option value="Sakit" id="opt-sakit" hidden>Sakit</option>
-    <option value="Dinas" id="opt-dinas" hidden>Dinas</option>
-</select>
+        <!-- loading -->
+        <option id="opt-loading" hidden>⏳ Mengambil status...</option>
 
-
+        <!-- opsi -->
+        <option value="Hadir" id="opt-hadir" hidden>Hadir</option>
+        <option value="Pulang" id="opt-pulang" hidden>Pulang</option>
+        <option value="Izin" id="opt-izin" hidden>Izin</option>
+        <option value="Sakit" id="opt-sakit" hidden>Sakit</option>
+        <option value="Dinas" id="opt-dinas" hidden>Dinas</option>
+    </select>
+</div>
 
         <!-- Keterangan -->
         <div class="form-group">
@@ -732,42 +737,36 @@ async function updateStatusOptions() {
     const optDinas = document.getElementById('opt-dinas');
     const optPulang = document.getElementById('opt-pulang');
 
-    // 🔒 Safety element
-    if (!selectStatus || !optLoading || !optHadir || !optPulang) {
-        console.log("Element belum siap");
-        return;
-    }
+    if (!selectStatus || !optLoading || !optHadir || !optPulang) return;
 
-    // tampilkan loading
+    // ===============================
+    // 🔥 TAMPILKAN LOADING
+    // ===============================
     selectStatus.disabled = true;
+
     optLoading.hidden = false;
+    optLoading.selected = true; // 🔥 wajib biar muncul
+    optLoading.textContent = "⏳ Mengambil status...";
 
     const userObj = userData || JSON.parse(sessionStorage.getItem('userData'));
     if (!userObj) {
-        console.log("User belum login");
-
-        // 🔥 pastikan loading dimatikan
         optLoading.hidden = true;
+        optLoading.selected = false;
         selectStatus.disabled = false;
-
         return;
     }
 
     try {
-        console.log("Ambil status dari GAS...");
-
         const url = `${GAS_URL}?action=getStatusUI&username=${encodeURIComponent(userObj.username)}&spreadsheetId=${encodeURIComponent(userObj.spreadsheetId)}`;
         
         const res = await fetch(url);
         const data = await res.json();
 
-        console.log("DEBUG STATUS UI:", data);
-
         const sudahMasuk = data.sudahAbsenMasuk === true;
         const sudahPulang = data.sudahPulang === true;
 
         // ===============================
-        // RESET SEMUA OPTION
+        // RESET SEMUA
         // ===============================
         optHadir.hidden = true;
         optIzin.hidden  = true;
@@ -776,48 +775,38 @@ async function updateStatusOptions() {
         optPulang.hidden = true;
 
         // ===============================
-        // LOGIKA TAMPIL
+        // LOGIKA
         // ===============================
         if (!sudahMasuk) {
             optHadir.hidden = false;
             optIzin.hidden  = false;
             optSakit.hidden = false;
             optDinas.hidden = false;
-
-            console.log("Mode: BELUM ABSEN");
         } 
         else if (sudahMasuk && !sudahPulang) {
             optPulang.hidden = false;
-
-            console.log("Mode: SIAP PULANG");
-        } 
-        else {
-            console.log("Mode: SUDAH PULANG");
         }
 
     } catch (err) {
-        console.error("Error updateStatusOptions:", err);
+        console.error("Error:", err);
     } finally {
-	    optLoading.hidden = true;
-	    optLoading.selected = false; // 🔥 penting
-	
-	    selectStatus.disabled = false;
-	
-	    // paksa balik ke default option
-	    selectStatus.selectedIndex = 0;
-	}
+        // ===============================
+        // 🔥 MATIKAN LOADING
+        // ===============================
+        optLoading.hidden = true;
+        optLoading.selected = false;
+
+        selectStatus.disabled = false;
+
+        // balik ke default
+        selectStatus.selectedIndex = 0;
+    }
 }
+
 
 // ===============================
 // AUTO LOAD + REFRESH STATUS UI
 // ===============================
-document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible") {
-        updateStatusOptions();
-    }
-});
-
-
 let dot = 0;
 
 setInterval(() => {
@@ -828,6 +817,7 @@ setInterval(() => {
         optLoading.textContent = "⏳ Mengambil status" + ".".repeat(dot);
     }
 }, 500);
+
 
 
 /* =========================================================================================================
