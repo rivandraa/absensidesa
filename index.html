@@ -299,7 +299,7 @@ document.addEventListener("DOMContentLoaded", function() {
         <!-- Status -->
 <div class="form-group">
     <label>📋 Status Absen</label>
-<select id="status" class="form-control" disabled>
+<select id="status" class="form-control">
     <option value="" disabled selected>Pilih Status Absen</option>
     <option value="Hadir" id="opt-hadir" hidden>Hadir</option>
     <option value="Pulang" id="opt-pulang" hidden>Pulang</option>
@@ -730,62 +730,78 @@ async function updateStatusOptions() {
 
     const selectStatus = document.getElementById("status");
 
+    // 🔒 Safety (biar tidak error)
+    if (!optHadir || !optPulang) {
+        console.log("Option belum siap");
+        return;
+    }
+
     const userObj = userData || JSON.parse(sessionStorage.getItem('userData'));
     if (!userObj) {
-        setTimeout(updateStatusOptions, 500);
+        console.log("User belum login");
         return;
     }
 
     try {
+        console.log("Ambil status dari GAS...");
+
         const url = `${GAS_URL}?action=getStatusUI&username=${encodeURIComponent(userObj.username)}&spreadsheetId=${encodeURIComponent(userObj.spreadsheetId)}`;
+        
         const res = await fetch(url);
         const data = await res.json();
 
-        console.log("DATA:", data);
+        console.log("DEBUG STATUS UI:", data);
 
-        const sudahAbsenMasuk = data.sudahAbsenMasuk === true;
+        const sudahMasuk = data.sudahAbsenMasuk === true;
         const sudahPulang = data.sudahPulang === true;
 
         // ===============================
-        // RESET SEMUA OPTION
+        // RESET SEMUA
         // ===============================
-        [optHadir, optIzin, optSakit, optDinas, optPulang].forEach(opt => {
-            if (opt) {
-                opt.hidden = true;
-                opt.disabled = true;
-            }
-        });
+        optHadir.hidden = true;
+        optIzin.hidden  = true;
+        optSakit.hidden = true;
+        optDinas.hidden = true;
+        optPulang.hidden = true;
 
         // ===============================
-        // LOGIKA
+        // BELUM ABSEN MASUK
         // ===============================
+        if (!sudahMasuk) {
+            optHadir.hidden = false;
+            optIzin.hidden  = false;
+            optSakit.hidden = false;
+            optDinas.hidden = false;
 
-        if (!sudahAbsenMasuk) {
-            // tampilkan selain pulang
-            [optHadir, optIzin, optSakit, optDinas].forEach(opt => {
-                if (opt) {
-                    opt.hidden = false;
-                    opt.disabled = false;
-                }
-            });
+            console.log("Mode: BELUM ABSEN");
+        }
 
-        } else if (!sudahPulang) {
-            // hanya pulang
-            if (optPulang) {
-                optPulang.hidden = false;
-                optPulang.disabled = false;
-            }
+        // ===============================
+        // SUDAH MASUK, BELUM PULANG
+        // ===============================
+        else if (sudahMasuk && !sudahPulang) {
+            optPulang.hidden = false;
 
-        } else {
-            // sudah pulang → disable select
+            console.log("Mode: SIAP PULANG");
+        }
+
+        // ===============================
+        // SUDAH PULANG
+        // ===============================
+        else {
+            console.log("Mode: SUDAH PULANG");
+        }
+
+        // reset pilihan dropdown biar tidak nyangkut
+        if (selectStatus) {
             selectStatus.value = "";
-            selectStatus.disabled = true;
         }
 
     } catch (err) {
-        console.error("Error:", err);
+        console.error("Error updateStatusOptions:", err);
     }
 }
+
 
 // ===============================
 // JALANKAN SAAT LOAD
