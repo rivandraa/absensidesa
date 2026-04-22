@@ -297,19 +297,18 @@ document.addEventListener("DOMContentLoaded", function() {
         </div>
 
         <!-- Status -->
-<div class="form-group">
-    <label>📋 Status Absen</label>
-    <select id="status" class="form-control" disabled>
-		<option id="opt-loading" hidden>⏳ Mengambil status...</option>
+<select id="status" class="form-control" disabled>
+    <option value="" disabled selected>Pilih Status Absen</option>
 
-		<option value="" disabled selected>Pilih Status Absen</option>
-        <option value="Hadir" id="opt-hadir" hidden>Hadir</option>
-        <option value="Pulang" id="opt-pulang" hidden>Pulang</option>
-        <option value="Izin" id="opt-izin" hidden>Izin</option>
-        <option value="Sakit" id="opt-sakit" hidden>Sakit</option>
-        <option value="Dinas" id="opt-dinas" hidden>Dinas</option>
-    </select>
-</div>
+    <option id="opt-loading" hidden>⏳ Mengambil status...</option>
+
+    <option value="Hadir" id="opt-hadir" hidden>Hadir</option>
+    <option value="Pulang" id="opt-pulang" hidden>Pulang</option>
+    <option value="Izin" id="opt-izin" hidden>Izin</option>
+    <option value="Sakit" id="opt-sakit" hidden>Sakit</option>
+    <option value="Dinas" id="opt-dinas" hidden>Dinas</option>
+</select>
+
 
 
         <!-- Keterangan -->
@@ -799,15 +798,14 @@ async function updateStatusOptions() {
     } catch (err) {
         console.error("Error updateStatusOptions:", err);
     } finally {
-        // ===============================
-        // 🔥 PASTIKAN LOADING MATI (APAPUN YANG TERJADI)
-        // ===============================
-        optLoading.hidden = true;
-        selectStatus.disabled = false;
-
-        // reset pilihan dropdown
-        selectStatus.value = "";
-    }
+	    optLoading.hidden = true;
+	    optLoading.selected = false; // 🔥 penting
+	
+	    selectStatus.disabled = false;
+	
+	    // paksa balik ke default option
+	    selectStatus.selectedIndex = 0;
+	}
 }
 
 // ===============================
