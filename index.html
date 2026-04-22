@@ -985,6 +985,10 @@ function stopGPSLoading() {
 // FUNGSI HITUNG INSTAN (ANTI-DELAY)
 // =====================================================
 function forceUpdateDistanceUI(lat, lon, acc) {
+	acc = Number(acc) || 0;
+	lat = Number(lat) || 0;
+	lon = Number(lon) || 0;
+
     // 1. Ambil input secepat mungkin
     const status = (document.getElementById("status")?.value || "").toLowerCase();
     const elNama = document.getElementById("titikKoordinatTampil");
@@ -994,11 +998,15 @@ function forceUpdateDistanceUI(lat, lon, acc) {
     const currentLon = lon || gpsData[1];
 
     // Jika GPS belum aktif, jangan proses apa pun
-    if (!currentLat || currentLat === 0) return;
+    // 🔥 VALIDASI LENGKAP
+    if (!currentLat || !currentLon || currentLat === 0 || currentLon === 0) {
+        updateGPSDisplay("📡 Menunggu sinyal GPS...");
+        return;
+    }
 
     // 2. Bangun teks dasar
     let displayText = `Lokasi Anda : ${currentLat.toFixed(6)},${currentLon.toFixed(6)}`;
-    displayText += `\nTingkat Akurasi : ${acc.toFixed(0)} Meter | > ${MAX_ACCURACY} Meter`;
+    displayText += `\nTingkat Akurasi : ${(acc || 0).toFixed(0)} Meter | > ${MAX_ACCURACY} Meter`;
 	
     // Baris Tambahan (Opsional): Animasi Akurasi
     if (acc && acc > MAX_ACCURACY) {
