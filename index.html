@@ -700,7 +700,6 @@ async function loginUser() {
             $('#perangkatData').val(res.nama + '|' + res.jabatan);
 
             fotoData = null;
-			updateStatusOptions();
 
             if (res.koordinat) {
                 const parts = res.koordinat.split(",");
@@ -709,6 +708,7 @@ async function loginUser() {
             }
             
             showPopup("Login berhasil!", "success");
+			updateStatusOptions();
             setTimeout(() => {
                 startIdleTimer();
                 startGPS();
@@ -802,6 +802,14 @@ async function updateStatusOptions() {
         selectStatus.selectedIndex = 0;
     }
 }
+
+	window.addEventListener("load", function () {
+    const elTampil = document.getElementById("titikKoordinatTampil");
+
+    if (elTampil) {
+        elTampil.value = "⚠️ Status Absen belum dipilih.";
+    }
+});
 
 
 // ===============================
