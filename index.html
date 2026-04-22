@@ -892,6 +892,7 @@ let lastTargetLocation = null;
 let areaErrorActive = false;
 let lastInsideArea = null;
 let fetchRequestId = 0;
+let gpsAccuracy = 0;
 
 let targetLocation = null;
 let gpsSystemActive = false;
@@ -1078,7 +1079,7 @@ async function refreshTargetLocation(callback) {
         isLoading = false;
 
         // langsung update UI (tanpa nunggu GPS)
-        forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
+        forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy || 0);
         return;
     }
 
@@ -1121,7 +1122,7 @@ async function refreshTargetLocation(callback) {
 
             // 🚀 UPDATE LANGSUNG TANPA DELAY
             if (gpsData[0] !== 0) {
-                forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
+                forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy || 0);
             }
 
         } else {
@@ -1130,7 +1131,7 @@ async function refreshTargetLocation(callback) {
             if (tampil) tampil.value = "-";
 
             // update juga biar UI tidak nunggu
-            forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
+            forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy || 0);
         }
 
     } catch (error) {
@@ -1224,6 +1225,7 @@ function startGPSMonitoring(onReady) {
                 const lat = pos.coords.latitude;
                 const lon = pos.coords.longitude;
                 const acc = pos.coords.accuracy;
+				gpsAccuracy = acc; // 🔥 simpan ke global
 
                 stopGPSLoading();
 
