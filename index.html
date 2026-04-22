@@ -801,21 +801,22 @@ async function updateStatusOptions() {
         console.error("Error updateStatusOptions:", err);
     }
 }
-
-
 // ===============================
-// JALANKAN SAAT LOAD
+// AUTO LOAD + REFRESH STATUS UI
 // ===============================
 window.addEventListener("load", function () {
-    updateStatusOptions();
 
-    // backup trigger (hindari race condition userData)
-    setTimeout(() => {
+    // Jalankan sekali saat awal (WAJIB)
+   // setTimeout(() => {
+   //     updateStatusOptions();
+   // }, 300); // kasih waktu userData siap
+
+    // Update tiap 1 menit (ringan & aman)
+    setInterval(() => {
         updateStatusOptions();
-    }, 100);
+    }, 60000);
+
 });
-
-
 
 /* =========================================================================================================
     BAGIAN KODE GPS (DIV DISPLAY)
@@ -2073,6 +2074,7 @@ if (res.status === "berhasil") {
     $('#keterangan').val('');
     fotoData = null;
     resetFoto();
+	updateStatusOptions();
 
 } else if (res.status === "sudah_absen") {
     const waktuID = formatIndonesia(res.waktu);
@@ -2611,6 +2613,7 @@ $(document).ready(function() {
         $('#perangkatData').val(userData.nama + '|' + userData.jabatan);
 
         fotoData = null; // Selalu reset foto saat refresh halaman absensi
+		updateStatusOptions();
         startGPS();
         startWebcam(); 
         startIdleTimer();
