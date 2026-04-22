@@ -737,9 +737,6 @@ async function updateStatusOptions() {
     const optDinas = document.getElementById('opt-dinas');
     const optPulang = document.getElementById('opt-pulang');
 
-    // Pastikan elemen ada sebelum manipulasi
-    if (!optHadir || !optPulang) return;
-
     const userObj = userData || JSON.parse(sessionStorage.getItem('userData'));
     if (!userObj) return;
 
@@ -748,32 +745,42 @@ async function updateStatusOptions() {
         const res = await fetch(url);
         const data = await res.json();
 
-        // PENYESUAIAN DISINI: Samakan dengan properti dari Apps Script
-        const sudahMasuk  = data.sudahAbsenMasuk === true; // Menggunakan properti 'sudahAbsenMasuk'
-        const sudahPulang = data.sudahPulang === true;    // Menggunakan properti 'sudahPulang'
+        console.log("STATUS UI:", data);
 
-        // Reset semua ke none
-        [optHadir, optIzin, optSakit, optDinas, optPulang].forEach(el => {
-            if (el) el.style.display = 'none';
-        });
+        const sudahAbsenMasuk = data.sudahAbsenMasuk === true;
+        const sudahPulang = data.sudahPulang === true;
 
-        if (!sudahMasuk) {
-            // Jika belum absen masuk sama sekali
+        // reset semua dulu
+        optHadir.style.display = 'none';
+        optIzin.style.display  = 'none';
+        optSakit.style.display = 'none';
+        optDinas.style.display = 'none';
+        optPulang.style.display = 'none';
+
+        // ===============================
+        // LOGIKA FINAL
+        // ===============================
+
+        if (!sudahAbsenMasuk) {
+            // BELUM ABSEN → tampilkan semua kecuali pulang
             optHadir.style.display = 'block';
             optIzin.style.display  = 'block';
             optSakit.style.display = 'block';
             optDinas.style.display = 'block';
-        } else if (sudahMasuk && !sudahPulang) {
-            // Jika sudah masuk (Hadir/Izin/Dinas) tapi belum pulang
+
+        } else if (sudahAbsenMasuk && !sudahPulang) {
+            // SUDAH MASUK → hanya pulang
             optPulang.style.display = 'block';
+
         } else if (sudahPulang) {
-            // Jika sudah pulang, biarkan semua tetap 'none' 
-            // atau tambahkan pesan "Absensi Selesai"
-            console.log("User sudah absen pulang hari ini.");
+            // SUDAH PULANG → semua disembunyikan
+            // (opsional: bisa tampilkan pesan)
+            console.log("User sudah pulang hari ini");
+			alert("Anda sudah absen hari ini");
         }
 
     } catch (err) {
-        console.error("Gagal mengambil status:", err);
+        console.error("Error:", err);
     }
 }
 
@@ -783,10 +790,12 @@ async function updateStatusOptions() {
 window.addEventListener("load", function () {
     updateStatusOptions();
 
+    // backup trigger (hindari race condition userData)
     setTimeout(() => {
         updateStatusOptions();
     }, 500);
 });
+
 
 /* =========================================================================================================
     BAGIAN KODE GPS (DIV DISPLAY)
