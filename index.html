@@ -299,15 +299,15 @@ document.addEventListener("DOMContentLoaded", function() {
         <!-- Status -->
 <div class="form-group">
     <label>📋 Status Absen</label>
-    <select id="status" class="form-control">
-        <option value="" disabled selected hidden>Pilih Status Absen</option>
-        <option value="Hadir" id="opt-hadir">Hadir</option>
-        <option value="Pulang" id="opt-pulang">Pulang</option>
-        <option value="Izin"id="opt-izin">Izin</option>
-        <option value="Sakit"id="opt-sakit">Sakit</option>
-        <option value="Dinas"id="opt-dinas">Dinas</option>
-        <option value="WFH" disabled hidden>WFH</option>
-    </select>
+<select id="status" class="form-control" disabled>
+    <option value="" disabled selected>Pilih Status Absen</option>
+    <option value="Hadir" id="opt-hadir" hidden>Hadir</option>
+    <option value="Pulang" id="opt-pulang" hidden>Pulang</option>
+    <option value="Izin" id="opt-izin" hidden>Izin</option>
+    <option value="Sakit" id="opt-sakit" hidden>Sakit</option>
+    <option value="Dinas" id="opt-dinas" hidden>Dinas</option>
+</select>
+
 </div>
 
         <!-- Keterangan -->
