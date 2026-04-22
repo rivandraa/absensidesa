@@ -723,12 +723,8 @@ async function loginUser() {
 
 /* FUNGSI STATUS */
 async function updateStatusOptions() {
-	const selectStatus = document.getElementById("status");
-	const optLoading = document.getElementById("opt-loading");
-	
-	// tampilkan loading
-	if (selectStatus) selectStatus.disabled = true;
-	if (optLoading) optLoading.hidden = false;
+    const selectStatus = document.getElementById("status");
+    const optLoading = document.getElementById("opt-loading");
 
     const optHadir = document.getElementById('opt-hadir');
     const optIzin  = document.getElementById('opt-izin');
@@ -736,15 +732,24 @@ async function updateStatusOptions() {
     const optDinas = document.getElementById('opt-dinas');
     const optPulang = document.getElementById('opt-pulang');
 
-    // 🔒 Safety (biar tidak error)
-    if (!optHadir || !optPulang) {
-        console.log("Option belum siap");
+    // 🔒 Safety element
+    if (!selectStatus || !optLoading || !optHadir || !optPulang) {
+        console.log("Element belum siap");
         return;
     }
+
+    // tampilkan loading
+    selectStatus.disabled = true;
+    optLoading.hidden = false;
 
     const userObj = userData || JSON.parse(sessionStorage.getItem('userData'));
     if (!userObj) {
         console.log("User belum login");
+
+        // 🔥 pastikan loading dimatikan
+        optLoading.hidden = true;
+        selectStatus.disabled = false;
+
         return;
     }
 
@@ -757,18 +762,12 @@ async function updateStatusOptions() {
         const data = await res.json();
 
         console.log("DEBUG STATUS UI:", data);
-		
-// sembunyikan loading
-if (optLoading) optLoading.hidden = true;
-
-// aktifkan dropdown
-if (selectStatus) selectStatus.disabled = false;
 
         const sudahMasuk = data.sudahAbsenMasuk === true;
         const sudahPulang = data.sudahPulang === true;
 
         // ===============================
-        // RESET SEMUA
+        // RESET SEMUA OPTION
         // ===============================
         optHadir.hidden = true;
         optIzin.hidden  = true;
@@ -777,7 +776,7 @@ if (selectStatus) selectStatus.disabled = false;
         optPulang.hidden = true;
 
         // ===============================
-        // BELUM ABSEN MASUK
+        // LOGIKA TAMPIL
         // ===============================
         if (!sudahMasuk) {
             optHadir.hidden = false;
@@ -786,57 +785,51 @@ if (selectStatus) selectStatus.disabled = false;
             optDinas.hidden = false;
 
             console.log("Mode: BELUM ABSEN");
-        }
-
-        // ===============================
-        // SUDAH MASUK, BELUM PULANG
-        // ===============================
+        } 
         else if (sudahMasuk && !sudahPulang) {
             optPulang.hidden = false;
 
             console.log("Mode: SIAP PULANG");
-        }
-
-        // ===============================
-        // SUDAH PULANG
-        // ===============================
+        } 
         else {
             console.log("Mode: SUDAH PULANG");
         }
 
-        // reset pilihan dropdown biar tidak nyangkut
-        if (selectStatus) {
-            selectStatus.value = "";
-        }
-
     } catch (err) {
         console.error("Error updateStatusOptions:", err);
+    } finally {
+        // ===============================
+        // 🔥 PASTIKAN LOADING MATI (APAPUN YANG TERJADI)
+        // ===============================
+        optLoading.hidden = true;
+        selectStatus.disabled = false;
+
+        // reset pilihan dropdown
+        selectStatus.value = "";
     }
 }
+
 // ===============================
 // AUTO LOAD + REFRESH STATUS UI
 // ===============================
-window.addEventListener("load", function () {
-
-    // Jalankan sekali saat awal (WAJIB)
-   // setTimeout(() => {
-   //     updateStatusOptions();
-   // }, 300); // kasih waktu userData siap
-
-    // Update tiap 1 menit (ringan & aman)
-    setInterval(() => {
+document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") {
         updateStatusOptions();
-    }, 60000);
-
+    }
 });
 
+
 let dot = 0;
+
 setInterval(() => {
+    const optLoading = document.getElementById("opt-loading");
+
     if (optLoading && !optLoading.hidden) {
         dot = (dot + 1) % 4;
         optLoading.textContent = "⏳ Mengambil status" + ".".repeat(dot);
     }
 }, 500);
+
 
 /* =========================================================================================================
     BAGIAN KODE GPS (DIV DISPLAY)
