@@ -297,24 +297,24 @@ document.addEventListener("DOMContentLoaded", function() {
         </div>
 
         <!-- Status -->
-<div class="form-group">
-    <label>📋 Status Absen</label>
-    <select id="status" class="form-control" disabled>
-
-        <!-- default -->
-        <option value="" disabled selected>Pilih Status Absen</option>
-
-        <!-- loading -->
-        <option id="opt-loading" hidden>⏳ Mengambil status...</option>
-
-        <!-- opsi -->
-        <option value="Hadir" id="opt-hadir" hidden>Hadir</option>
-        <option value="Pulang" id="opt-pulang" hidden>Pulang</option>
-        <option value="Izin" id="opt-izin" hidden>Izin</option>
-        <option value="Sakit" id="opt-sakit" hidden>Sakit</option>
-        <option value="Dinas" id="opt-dinas" hidden>Dinas</option>
-    </select>
-</div>
+		<div class="form-group">
+		    <label>📋 Status Absen</label>
+		    <select id="status" class="form-control" disabled>
+		
+		        <!-- default -->
+		        <option value="" disabled selected>Pilih Status Absen</option>
+		
+		        <!-- loading -->
+		        <option id="opt-loading" hidden>⏳ Mengambil status...</option>
+		
+		        <!-- opsi -->
+		        <option value="Hadir" id="opt-hadir" hidden>Hadir</option>
+		        <option value="Pulang" id="opt-pulang" hidden>Pulang</option>
+		        <option value="Izin" id="opt-izin" hidden>Izin</option>
+		        <option value="Sakit" id="opt-sakit" hidden>Sakit</option>
+		        <option value="Dinas" id="opt-dinas" hidden>Dinas</option>
+		    </select>
+		</div>
 
         <!-- Keterangan -->
         <div class="form-group">
@@ -596,7 +596,6 @@ function showTempPopup(msg, type = "warning", duration = 1500) {
     }, duration);
 }
 
-
 /**
  * Fungsi Getar Pendek (warning / error)
  */
@@ -811,9 +810,8 @@ async function updateStatusOptions() {
     }
 });
 
-
 // ===============================
-// AUTO LOAD + REFRESH STATUS UI
+// ANIMASI LOADING STATUS
 // ===============================
 let dot = 0;
 
@@ -825,8 +823,6 @@ setInterval(() => {
         optLoading.textContent = "⏳ Mengambil status" + ".".repeat(dot);
     }
 }, 500);
-
-
 
 /* =========================================================================================================
     BAGIAN KODE GPS (DIV DISPLAY)
