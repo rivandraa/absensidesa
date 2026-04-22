@@ -731,6 +731,8 @@ async function loginUser() {
 
 /* FUNGSI STATUS */
 async function updateStatusOptions() {
+    console.log("RUN updateStatusOptions");
+
     const optHadir = document.getElementById('opt-hadir');
     const optIzin  = document.getElementById('opt-izin');
     const optSakit = document.getElementById('opt-sakit');
@@ -738,45 +740,38 @@ async function updateStatusOptions() {
     const optPulang = document.getElementById('opt-pulang');
 
     const userObj = userData || JSON.parse(sessionStorage.getItem('userData'));
-    if (!userObj) return;
+
+    if (!userObj) {
+        console.log("userData belum siap, retry...");
+        setTimeout(updateStatusOptions, 500);
+        return;
+    }
 
     try {
         const url = `${GAS_URL}?action=getStatusUI&username=${encodeURIComponent(userObj.username)}&spreadsheetId=${encodeURIComponent(userObj.spreadsheetId)}`;
         const res = await fetch(url);
         const data = await res.json();
 
-        console.log("STATUS UI:", data);
+        console.log("DATA:", data);
 
         const sudahAbsenMasuk = data.sudahAbsenMasuk === true;
         const sudahPulang = data.sudahPulang === true;
 
-        // reset semua dulu
-        optHadir.style.display = 'none';
-        optIzin.style.display  = 'none';
-        optSakit.style.display = 'none';
-        optDinas.style.display = 'none';
-        optPulang.style.display = 'none';
-
-        // ===============================
-        // LOGIKA FINAL
-        // ===============================
+        // reset
+        if (optHadir) optHadir.style.display = 'none';
+        if (optIzin) optIzin.style.display  = 'none';
+        if (optSakit) optSakit.style.display = 'none';
+        if (optDinas) optDinas.style.display = 'none';
+        if (optPulang) optPulang.style.display = 'none';
 
         if (!sudahAbsenMasuk) {
-            // BELUM ABSEN → tampilkan semua kecuali pulang
-            optHadir.style.display = 'block';
-            optIzin.style.display  = 'block';
-            optSakit.style.display = 'block';
-            optDinas.style.display = 'block';
+            if (optHadir) optHadir.style.display = 'block';
+            if (optIzin) optIzin.style.display  = 'block';
+            if (optSakit) optSakit.style.display = 'block';
+            if (optDinas) optDinas.style.display = 'block';
 
-        } else if (sudahAbsenMasuk && !sudahPulang) {
-            // SUDAH MASUK → hanya pulang
-            optPulang.style.display = 'block';
-
-        } else if (sudahPulang) {
-            // SUDAH PULANG → semua disembunyikan
-            // (opsional: bisa tampilkan pesan)
-            console.log("User sudah pulang hari ini");
-			alert("Anda sudah absen hari ini");
+        } else if (!sudahPulang) {
+            if (optPulang) optPulang.style.display = 'block';
         }
 
     } catch (err) {
@@ -784,17 +779,10 @@ async function updateStatusOptions() {
     }
 }
 
-// ===============================
-// JALANKAN SAAT LOAD
-// ===============================
 window.addEventListener("load", function () {
     updateStatusOptions();
-
-    // backup trigger (hindari race condition userData)
-    setTimeout(() => {
-        updateStatusOptions();
-    }, 500);
 });
+
 
 
 /* =========================================================================================================
