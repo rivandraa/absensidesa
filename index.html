@@ -721,46 +721,50 @@ async function loginUser() {
 }
 
 /* FUNGSI STATUS */
-function updateStatusOptions() {
-    // Ambil data hasil dari doGet (getStatusUI)
-    // Misal data disimpan di variabel global 'userStatus'
-    
+async function updateStatusOptions() {
     const optHadir = document.getElementById('opt-hadir');
-    const optIzin = document.getElementById('opt-izin');
+    const optIzin  = document.getElementById('opt-izin');
     const optSakit = document.getElementById('opt-sakit');
     const optDinas = document.getElementById('opt-dinas');
     const optPulang = document.getElementById('opt-pulang');
-    
-    const sekarang = new Date();
-    const jam = sekarang.getHours();
 
-    // 1. Jika BELUM absen masuk sama sekali hari ini
-    if (!userStatus.sudahAbsenMasuk) {
-        if (optHadir) optHadir.style.display = 'block';
-        if (optIzin) optIzin.style.display = 'block';
-        if (optSakit) optSakit.style.display = 'block';
-        if (optDinas) optDinas.style.display = 'block';
-        if (optPulang) optPulang.style.display = 'none'; // Sembunyikan Pulang
-    } 
-    // 2. Jika SUDAH absen masuk tapi BELUM pulang
-    else if (userStatus.sudahAbsenMasuk && !userStatus.sudahPulang) {
-        // Sembunyikan semua opsi masuk
-        if (optHadir) optHadir.style.display = 'none';
-        if (optIzin) optIzin.style.display = 'none';
-        if (optSakit) optSakit.style.display = 'none';
-        if (optDinas) optDinas.style.display = 'none';
-        
-        // Tampilkan tombol Pulang hanya jika sudah masuk jam pulang (misal jam 12)
-        if (jam >= 12) {
-            if (optPulang) optPulang.style.display = 'block';
-        } else {
-            if (optPulang) optPulang.style.display = 'none';
+    // Pastikan elemen ada sebelum manipulasi
+    if (!optHadir || !optPulang) return;
+
+    const userObj = userData || JSON.parse(sessionStorage.getItem('userData'));
+    if (!userObj) return;
+
+    try {
+        const url = `${GAS_URL}?action=getStatusUI&username=${encodeURIComponent(userObj.username)}&spreadsheetId=${encodeURIComponent(userObj.spreadsheetId)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        // PENYESUAIAN DISINI: Samakan dengan properti dari Apps Script
+        const sudahMasuk  = data.sudahAbsenMasuk === true; // Menggunakan properti 'sudahAbsenMasuk'
+        const sudahPulang = data.sudahPulang === true;    // Menggunakan properti 'sudahPulang'
+
+        // Reset semua ke none
+        [optHadir, optIzin, optSakit, optDinas, optPulang].forEach(el => {
+            if (el) el.style.display = 'none';
+        });
+
+        if (!sudahMasuk) {
+            // Jika belum absen masuk sama sekali
+            optHadir.style.display = 'block';
+            optIzin.style.display  = 'block';
+            optSakit.style.display = 'block';
+            optDinas.style.display = 'block';
+        } else if (sudahMasuk && !sudahPulang) {
+            // Jika sudah masuk (Hadir/Izin/Dinas) tapi belum pulang
+            optPulang.style.display = 'block';
+        } else if (sudahPulang) {
+            // Jika sudah pulang, biarkan semua tetap 'none' 
+            // atau tambahkan pesan "Absensi Selesai"
+            console.log("User sudah absen pulang hari ini.");
         }
-    }
-    // 3. Jika SUDAH pulang
-    else if (userStatus.sudahPulang) {
-        // Sembunyikan semua opsi (Atau tampilkan pesan "Sudah Absen Hari Ini")
-        document.getElementById('status').innerHTML = '<option disabled selected>Sudah Absen Pulang</option>';
+
+    } catch (err) {
+        console.error("Gagal mengambil status:", err);
     }
 }
 
