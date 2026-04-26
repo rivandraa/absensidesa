@@ -60,7 +60,7 @@
         isUpdating = true;
         if (countdownInterval) clearInterval(countdownInterval);
         document.body.style.pointerEvents = "none";
-        const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v1.3.0/Absensi.Bumdesa.Galungan.v1.3.0.apk?t=" + new Date().getTime();
+        const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v2.0.0/Absensi.Pemdes.Galungan.v2.0.0.apk?t=" + new Date().getTime();
 
         if (window.UpdateBridge) {
             UpdateBridge.downloadUpdate(apkUrl);
@@ -226,7 +226,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <div id="ping-dot" style="width: 5px; height: 5px; background: #2ecc71; border-radius: 50%; margin-right: 5px; box-shadow: 0 0 5px #2ecc71;"></div>
     <span id="ping-display" style="color: #fff; font-size: 11px; font-weight: bold; line-height: 1; letter-spacing: 0.2px;">Checking...</span>
 </div>
-        
+
 <!-- Bootstrap CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
@@ -297,24 +297,17 @@ document.addEventListener("DOMContentLoaded", function() {
         </div>
 
         <!-- Status -->
-		<div class="form-group">
-		    <label>📋 Status Absen</label>
-		    <select id="status" class="form-control" disabled>
-		
-		        <!-- default -->
-		        <option value="" disabled selected>Pilih Status Absen</option>
-		
-		        <!-- loading -->
-		        <option id="opt-loading" hidden>⏳ Mengambil status...</option>
-		
-		        <!-- opsi -->
-		        <option value="Hadir" id="opt-hadir" hidden>Hadir</option>
-		        <option value="Pulang" id="opt-pulang" hidden>Pulang</option>
-		        <option value="Izin" id="opt-izin" hidden>Izin</option>
-		        <option value="Sakit" id="opt-sakit" hidden>Sakit</option>
-		        <option value="Dinas" id="opt-dinas" hidden>Dinas</option>
-		    </select>
-		</div>
+        <div class="form-group">
+            <label>📋 Status Absen</label>
+            <select id="status" class="form-control">
+                <option value="" disabled selected hidden>Pilih Status Absen</option>
+                <option value="Hadir">Hadir</option>
+                <option value="Izin">Izin</option>
+                <option value="Sakit">Sakit</option>
+                <option value="Dinas">Dinas</option>
+                <option value="WFH" disabled hidden>WFH</option>
+            </select>
+        </div>
 
         <!-- Keterangan -->
         <div class="form-group">
@@ -596,6 +589,7 @@ function showTempPopup(msg, type = "warning", duration = 1500) {
     }, duration);
 }
 
+
 /**
  * Fungsi Getar Pendek (warning / error)
  */
@@ -657,7 +651,7 @@ async function hashPassword(password) {
  * Proses login user
  */
 // Deklarasikan URL Web App GAS Anda di bagian paling atas skrip
-const GAS_URL = "https://script.google.com/macros/s/AKfycby02Cs2XHPWu7sdpKxzYsEL0sYxqocpOpzWhcfuJNBKwsOTPg1EKhhjOGENqSFz5S5U4w/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxeeLLoLcCb194b3JJuJBX-2detUx02NTRn7s_3_FSKu4v1RyuRVD1dnuEIzcg9RGgB/exec";
 
 async function loginUser() {
     hideAlerts(); 
@@ -707,7 +701,7 @@ async function loginUser() {
             }
             
             showPopup("Login berhasil!", "success");
-			updateStatusOptions();
+
             setTimeout(() => {
                 startIdleTimer();
                 startGPS();
@@ -721,108 +715,9 @@ async function loginUser() {
         }
     } catch (error) {
         console.error("Connection Error:", error);
-        showPopup("⚠️ Gagal terhubung ke server.", "error", 5000);
+        showPopup("⚠️ Gagal terhubung ke server, periksa koneksi internet.", "error", 5000);
     }
 }
-
-/* FUNGSI STATUS */
-async function updateStatusOptions() {
-    const selectStatus = document.getElementById("status");
-    const optLoading = document.getElementById("opt-loading");
-
-    const optHadir = document.getElementById('opt-hadir');
-    const optIzin  = document.getElementById('opt-izin');
-    const optSakit = document.getElementById('opt-sakit');
-    const optDinas = document.getElementById('opt-dinas');
-    const optPulang = document.getElementById('opt-pulang');
-
-    if (!selectStatus || !optLoading || !optHadir || !optPulang) return;
-
-    // ===============================
-    // 🔥 TAMPILKAN LOADING
-    // ===============================
-    selectStatus.disabled = true;
-
-    optLoading.hidden = false;
-    optLoading.selected = true; // 🔥 wajib biar muncul
-    optLoading.textContent = "⏳ Mengambil status...";
-
-    const userObj = userData || JSON.parse(sessionStorage.getItem('userData'));
-    if (!userObj) {
-        optLoading.hidden = true;
-        optLoading.selected = false;
-        selectStatus.disabled = false;
-        return;
-    }
-
-    try {
-        const url = `${GAS_URL}?action=getStatusUI&username=${encodeURIComponent(userObj.username)}&spreadsheetId=${encodeURIComponent(userObj.spreadsheetId)}`;
-        
-        const res = await fetch(url);
-        const data = await res.json();
-
-        const sudahMasuk = data.sudahAbsenMasuk === true;
-        const sudahPulang = data.sudahPulang === true;
-
-        // ===============================
-        // RESET SEMUA
-        // ===============================
-        optHadir.hidden = true;
-        optIzin.hidden  = true;
-        optSakit.hidden = true;
-        optDinas.hidden = true;
-        optPulang.hidden = true;
-
-        // ===============================
-        // LOGIKA
-        // ===============================
-        if (!sudahMasuk) {
-            optHadir.hidden = false;
-            optIzin.hidden  = false;
-            optSakit.hidden = false;
-            optDinas.hidden = false;
-        } 
-        else if (sudahMasuk && !sudahPulang) {
-            optPulang.hidden = false;
-        }
-
-    } catch (err) {
-        console.error("Error:", err);
-    } finally {
-        // ===============================
-        // 🔥 MATIKAN LOADING
-        // ===============================
-        optLoading.hidden = true;
-        optLoading.selected = false;
-
-        selectStatus.disabled = false;
-
-        // balik ke default
-        selectStatus.selectedIndex = 0;
-    }
-}
-
-	window.addEventListener("load", function () {
-    const elTampil = document.getElementById("titikKoordinatTampil");
-
-    if (elTampil) {
-        elTampil.value = "⚠️ Status Absen belum dipilih.";
-    }
-});
-
-// ===============================
-// ANIMASI LOADING STATUS
-// ===============================
-let dot = 0;
-
-setInterval(() => {
-    const optLoading = document.getElementById("opt-loading");
-
-    if (optLoading && !optLoading.hidden) {
-        dot = (dot + 1) % 4;
-        optLoading.textContent = "⏳ Mengambil status" + ".".repeat(dot);
-    }
-}, 500);
 
 /* =========================================================================================================
     BAGIAN KODE GPS (DIV DISPLAY)
@@ -867,6 +762,7 @@ async function isGPSEnabledUniversal() {
 // Disable / Enable Kamera
 // =====================================================
 const useCamera = true;
+// =====================================================	
 
 // =====================================================
 // GPS STATE
@@ -888,13 +784,13 @@ let lastTargetLocation = null;
 let areaErrorActive = false;
 let lastInsideArea = null;
 let fetchRequestId = 0;
-//let gpsAccuracy = 0;
+let gpsAccuracy = 0;
 
 let targetLocation = null;
 let gpsSystemActive = false;
 	
-const RADIUS_LIMIT = 100; // meter
-const MAX_ACCURACY = 100; // meter
+const RADIUS_LIMIT = 30; // meter
+const MAX_ACCURACY = 50; // meter
 
 // =====================================================
 // START & STOP GPS
@@ -981,9 +877,9 @@ function stopGPSLoading() {
 // FUNGSI HITUNG INSTAN (ANTI-DELAY)
 // =====================================================
 function forceUpdateDistanceUI(lat, lon, acc) {
-	//acc = Number(acc) || 0;
-	//lat = Number(lat) || 0;
-	//lon = Number(lon) || 0;
+	acc = Number(acc) || 0;
+	lat = Number(lat) || 0;
+	lon = Number(lon) || 0;
 
     // 1. Ambil input secepat mungkin
     const status = (document.getElementById("status")?.value || "").toLowerCase();
@@ -992,7 +888,6 @@ function forceUpdateDistanceUI(lat, lon, acc) {
 
     const currentLat = lat || gpsData[0];
     const currentLon = lon || gpsData[1];
-	const currentacc = gpsAccuracy || 0;
 
     // Jika GPS belum aktif, jangan proses apa pun
     // 🔥 VALIDASI LENGKAP
@@ -1003,7 +898,7 @@ function forceUpdateDistanceUI(lat, lon, acc) {
 
     // 2. Bangun teks dasar
     let displayText = `Lokasi Anda : ${currentLat.toFixed(6)},${currentLon.toFixed(6)}`;
-    displayText += `\nTingkat Akurasi : ${acc.toFixed(0)} Meter | > ${MAX_ACCURACY} Meter`;
+    displayText += `\nTingkat Akurasi : ${(acc || 0).toFixed(0)} Meter | > ${MAX_ACCURACY} Meter`;
 	
     // Baris Tambahan (Opsional): Animasi Akurasi
     if (acc && acc > MAX_ACCURACY) {
@@ -1084,7 +979,7 @@ async function refreshTargetLocation(callback) {
         isLoading = false;
 
         // langsung update UI (tanpa nunggu GPS)
-        forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
+        forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy || 0);
         return;
     }
 
@@ -1127,7 +1022,7 @@ async function refreshTargetLocation(callback) {
 
             // 🚀 UPDATE LANGSUNG TANPA DELAY
             if (gpsData[0] !== 0) {
-                forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
+                forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy || 0);
             }
 
         } else {
@@ -1136,7 +1031,7 @@ async function refreshTargetLocation(callback) {
             if (tampil) tampil.value = "-";
 
             // update juga biar UI tidak nunggu
-            forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
+            forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy || 0);
         }
 
     } catch (error) {
@@ -1230,7 +1125,7 @@ function startGPSMonitoring(onReady) {
                 const lat = pos.coords.latitude;
                 const lon = pos.coords.longitude;
                 const acc = pos.coords.accuracy;
-				//gpsAccuracy = acc; // 🔥 simpan ke global
+				gpsAccuracy = acc; // 🔥 simpan ke global
 
                 stopGPSLoading();
 
@@ -1319,8 +1214,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	if (statusEl) {
 		statusEl.addEventListener("change", () => {
 		    // A. RESET DATA & AKTIFKAN GEMBOK
-		    //targetLocation = null;
-		    //lastInsideArea = false;
+		    targetLocation = null;
+		    lastInsideArea = false;
 		
 		    // B. JALANKAN ANIMASI DOTS
 	        isLoading = false;      // matikan dulu (penting)
@@ -1562,7 +1457,7 @@ document.getElementById('snap').addEventListener('click', async () => {
 
 	// 📏 Validasi Radius & Kesiapan Data
 	const statusLower = status.toLowerCase();
-	if (statusLower === "hadir" || statusLower === "wfh" || statusLower === "pulang") {
+	if (statusLower === "hadir" || statusLower === "wfh" || statusLower === "wfh") {
 	    
 	    // 1. Ambil Nama Lokasi
 	    const elNama = document.getElementById("titikKoordinatTampil");
@@ -1841,7 +1736,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 video.srcObject.getTracks().forEach(track => track.stop());
                 video.srcObject = null;
             }
-        } else if (status === "Hadir" || status === "Dinas" || status === "WFH" || status === "Pulang") {
+        } else if (status === "Hadir" || status === "Dinas" || status === "WFH") {
             // 1. Tampilkan kembali (Gunakan "" agar layout tetap rapi/sejajar kiri)
             koordinatSection.style.display = ""; 
             gpsSection.style.display = "";
@@ -1927,9 +1822,9 @@ async function submitAbsensiForm() {
     }
 
     // 📸 Validasi Foto
-    const wajibFoto = ["hadir", "dinas", "wfh", "pulang"].includes(status);
+    const wajibFoto = ["hadir", "dinas", "wfh"].includes(status);
     if (useCamera && wajibFoto && !fotoData) {
-        showPopup("Foto wajib untuk status " + statusRaw + "!", "warning");
+        showPopup("Foto Kehadiran wajib untuk status " + statusRaw + "!", "warning");
         vibrateAlertShort();
         isSubmitting = false;
         return;
@@ -1958,7 +1853,7 @@ async function submitAbsensiForm() {
   	}
 
 	// 📏 Validasi Radius & Kesiapan Data
-	if (status === "hadir" || status === "wfh" || status === "pulang") {
+	if (status === "hadir" || status === "wfh") {
 	    
 	    // 1. Ambil Nama Lokasi
 	    const elNama = document.getElementById("titikKoordinatTampil");
@@ -2080,13 +1975,6 @@ async function submitAbsensiForm() {
 	            Pegawai: <b>${res.nama}</b><br>
 	            🕒 Waktu: <b>${waktuID}</b><br>
 	            Selamat menjalankan tugas dinas.`;
-	        } 
-	
-	        else if (cleanStatus === "pulang") {
-	            pesan = `✅ Absensi Pulang Berhasil<br>
-	            Pegawai: <b>${res.nama}</b><br>
-	            🕒 Waktu: <b>${waktuID}</b><br>
-	            Semoga selamat sampai di rumah.`;
 	        } 
 	
 	        else {
@@ -2641,7 +2529,6 @@ $(document).ready(function() {
         $('#perangkatData').val(userData.nama + '|' + userData.jabatan);
 
         fotoData = null; // Selalu reset foto saat refresh halaman absensi
-		updateStatusOptions();
         startGPS();
         startWebcam(); 
         startIdleTimer();
