@@ -1998,130 +1998,141 @@ async function submitAbsensiForm() {
 	    // Jika namaLokasi === "-", maka otomatis lolos ke proses submit berikutnya
 	}
 
-    // ======================================
-    // PERSIAPAN DATA UNTUK DIKIRIM
-    // ======================================
-    const payload = {
-        action: "submitAbsensi", // Memberitahu GAS action apa yang dijalankan
-        nama: val[0],
-        jabatan: val[1],
-        status: statusRaw,
-        keterangan: keterangan,
-        statusPegawai: userData.statusPegawai,
-        spreadsheetId: userData.spreadsheetId,
-        folderId: userData.folderId
-    };
-
-    if (!["izin", "sakit"].includes(status)) {
-        payload.foto = fotoData; // Ini berisi {base64, name, type, dll}
-        payload.gps = gpsFinal;
-    }
-
-    // Kunci UI
-    document.getElementById('snap').disabled = true;
-    document.getElementById('reset').disabled = true;
-    showPopup("Memproses absensi...", "loading");
-
-    try {
-        // 🔥 KIRIM DATA KE GAS MENGGUNAKAN FETCH (POST)
-        const response = await fetch(GAS_URL, {
-            method: "POST",
-            body: JSON.stringify(payload)
-        });
-
-        const res = await response.json();
-
-        // Buka Kunci UI
-        document.getElementById('snap').disabled = false;
-        document.getElementById('reset').disabled = false;
-        isSubmitting = false;
-
-if (res.status === "berhasil") {
-    const waktuID = formatIndonesia(res.waktu);
-    let pesan = "";
-
-    if (status === "Hadir") {
-        pesan = `✅ Absensi Kehadiran Berhasil<br>
-        Pegawai: <b>${res.nama}</b><br>
-        🕒 Waktu: <b>${waktuID}</b><br>
-        Terima kasih, selamat menjalankan tugas.`;
-    } 
-    else if (status === "WFH") {
-        pesan = `✅ Absensi WFH Berhasil<br>
-        Pegawai: <b>${res.nama}</b><br>
-        🕒 Waktu: <b>${waktuID}</b><br>
-        Tetap semangat bekerja dari rumah.`;
-    } 
-    else if (status === "Izin") {
-        pesan = `✅ Pengajuan Izin Berhasil<br>
-        Pegawai: <b>${res.nama}</b><br>
-        🕒 Waktu: <b>${waktuID}</b><br>
-        Permohonan izin telah dicatat.`;
-    } 
-    else if (status === "Sakit") {
-        pesan = `✅ Laporan Sakit Berhasil<br>
-        Pegawai: <b>${res.nama}</b><br>
-        🕒 Waktu: <b>${waktuID}</b><br>
-        Semoga lekas pulih.`;
-    }
-    else if (status === "Dinas") {
-        pesan = `✅ Absensi Dinas Berhasil<br>
-        Pegawai: <b>${res.nama}</b><br>
-        🕒 Waktu: <b>${waktuID}</b><br>
-        Selamat menjalankan tugas dinas.`;
-    }
-    else if (status === "Pulang") {
-        pesan = `✅ Absensi Pulang Berhasil<br>
-        Pegawai: <b>${res.nama}</b><br>
-        🕒 Waktu: <b>${waktuID}</b><br>
-        Selamat istirahat dan hati-hati di jalan.`;
-    }
-    else {
-        pesan = `✅ Absensi berhasil!<br>
-        Pegawai: <b>${res.nama}</b><br>
-        🕒 Waktu: <b>${waktuID}</b>`;
-    }
-
-    showPopup(pesan, "success", 6000);
-    vibrateAlertLong();
-    
-    // Reset Form
-    $('#status').val('');
-    $('#keterangan').val('');
-    fotoData = null;
-    resetFoto();
-	updateStatusOptions();
-
-} else if (res.status === "sudah_absen") {
-    const waktuID = formatIndonesia(res.waktu);
-    
-    // Membuat pesan dinamis berdasarkan status yang sedang dipilih
-    const labelStatus = status === "Hadir" ? "Hadir" : (status === "Pulang" ? "Pulang" : status);
-    
-    showPopup(
-        `⚠️ Absensi <b>${labelStatus}</b> sudah tercatat hari ini<br>
-        🕒 Waktu terakhir: <b>${waktuID}</b>`,
-        "warning", 6000
-    );
-		    vibrateAlertLong();
-		
-		} else {
-		    throw new Error(res.message || "Gagal menyimpan");
-		}
-		
-		} catch (err) {
-		    document.getElementById('snap').disabled = false;
-		    document.getElementById('reset').disabled = false;
-		    isSubmitting = false;
-		
-		    showPopup(
-		        `❌ Terjadi kesalahan saat mengirim data<br>
-		        <small>${err.message}</small>`,
-		        "error"
-		    );
-		    
-		    vibrateAlertLong();
-		}
+	// ======================================
+	// PERSIAPAN DATA UNTUK DIKIRIM
+	// ======================================
+	const payload = {
+	    action: "submitAbsensi",
+	    nama: val[0],
+	    jabatan: val[1],
+	    status: statusRaw,
+	    keterangan: keterangan,
+	    statusPegawai: userData.statusPegawai,
+	    spreadsheetId: userData.spreadsheetId,
+	    folderId: userData.folderId
+	};
+	
+	if (!["izin", "sakit"].includes(status)) {
+	    payload.foto = fotoData;
+	    payload.gps = gpsFinal;
+	}
+	
+	// Kunci UI
+	document.getElementById('snap').disabled = true;
+	document.getElementById('reset').disabled = true;
+	showPopup("Memproses absensi...", "loading");
+	
+	try {
+	    const response = await fetch(GAS_URL, {
+	        method: "POST",
+	        body: JSON.stringify(payload)
+	    });
+	
+	    const res = await response.json();
+	
+	    // Buka Kunci UI
+	    document.getElementById('snap').disabled = false;
+	    document.getElementById('reset').disabled = false;
+	    isSubmitting = false;
+	
+	    // ===============================
+	    // 🔥 NORMALISASI STATUS (FIX UTAMA)
+	    // ===============================
+	    const cleanStatus = (statusRaw || "").trim().toLowerCase();
+	
+	    console.log("DEBUG status:", cleanStatus);
+	
+	    if (res.status === "berhasil") {
+	        const waktuID = formatIndonesia(res.waktu);
+	        let pesan = "";
+	
+	        if (cleanStatus === "hadir") {
+	            pesan = `✅ Absensi Kehadiran Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Terima kasih, selamat menjalankan tugas.`;
+	        } 
+	
+	        else if (cleanStatus === "wan") {
+	            pesan = `✅ Absensi Kehadiran Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Tetap semangat bekerja dari rumah.`;
+	        } 
+	
+	        else if (cleanStatus === "izin") {
+	            pesan = `✅ Pengajuan Izin Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Permohonan izin telah dicatat.`;
+	        } 
+	
+	        else if (cleanStatus === "sakit") {
+	            pesan = `✅ Laporan Sakit Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Semoga lekas pulih.`;
+	        } 
+	
+	        else if (cleanStatus === "dinas") {
+	            pesan = `✅ Absensi Dinas Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Selamat menjalankan tugas dinas.`;
+	        } 
+	
+	        else if (cleanStatus === "pulang") {
+	            pesan = `✅ Absensi Pulang Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Semoga selamat sampai di rumah.`;
+	        } 
+	
+	        else {
+	            pesan = `✅ Absensi berhasil!<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b>`;
+	        }
+	
+	        showPopup(pesan, "success", 6000);
+	        vibrateAlertLong();
+	
+	        // Reset Form
+	        $('#status').val('');
+	        $('#keterangan').val('');
+	        fotoData = null;
+	        resetFoto();
+	        updateStatusOptions();
+	
+	    } else if (res.status === "sudah_absen") {
+	        const waktuID = formatIndonesia(res.waktu);
+	
+	        showPopup(
+	            `⚠️ Absensi sudah tercatat hari ini<br>
+	            🕒 Waktu terakhir: <b>${waktuID}</b>`,
+	            "warning",
+	            6000
+	        );
+	
+	        vibrateAlertLong();
+	
+	    } else {
+	        throw new Error(res.message || "Gagal menyimpan");
+	    }
+	
+	} catch (err) {
+	    document.getElementById('snap').disabled = false;
+	    document.getElementById('reset').disabled = false;
+	    isSubmitting = false;
+	
+	    showPopup(
+	        `❌ Terjadi kesalahan saat mengirim data<br>
+	        <small>${err.message}</small>`,
+	        "error"
+	    );
+	
+	    vibrateAlertLong();
+	}
 }
 
 // =========================================================================================================
