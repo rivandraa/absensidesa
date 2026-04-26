@@ -843,6 +843,8 @@ function resetGPSState() {
 // =====================================================
 // UI UPDATE & ANIMATION
 // =====================================================
+let dots = 0;
+	
 function updateGPSDisplay(text) {
     const gpsDiv = document.getElementById("gps");
     const gpsHidden = document.getElementById("gpsHidden");
@@ -855,16 +857,11 @@ function updateGPSDisplay(text) {
 
 function startGPSLoading() {
     animatingGPS = true;
-
-    const dotsArr = ["", ".", "..", "..."];
-    let i = 0;
-
     stopGPSLoading();
-
     gpsLoadingInterval = setInterval(() => {
-        updateGPSDisplay("Sedang memperbarui lokasi" + dotsArr[i]);
-        i = (i + 1) % dotsArr.length;
-    }, 600);
+        dots = (dots + 1) % 4;
+        updateGPSDisplay("Sedang memperbarui lokasi" + ".".repeat(dots));
+    }, 500);
 }
 
 function stopGPSLoading() {
@@ -879,29 +876,40 @@ function stopGPSLoading() {
 // FUNGSI HITUNG INSTAN (ANTI-DELAY)
 // =====================================================
 function forceUpdateDistanceUI(lat, lon, acc) {
+
+    lat = Number(lat ?? gpsData?.[0] ?? 0);
+    lon = Number(lon ?? gpsData?.[1] ?? 0);
+
+    acc = Number(acc ?? gpsAccuracy ?? 0);
+    if (isNaN(acc)) acc = 0;
+
     // 1. Ambil input secepat mungkin
     const status = (document.getElementById("status")?.value || "").toLowerCase();
     const elNama = document.getElementById("titikKoordinatTampil");
     const namaLokasi = elNama?.value || "Area Absensi";
 
-    const currentLat = lat || gpsData[0];
-    const currentLon = lon || gpsData[1];
+    const currentLat = lat;
+    const currentLon = lon;
 
     // Jika GPS belum aktif, jangan proses apa pun
-    if (!currentLat || currentLat === 0) return;
+    // 🔥 VALIDASI LENGKAP
+    if (!currentLat || !currentLon || currentLat === 0 || currentLon === 0) {
+        updateGPSDisplay("📡 Menunggu sinyal GPS...");
+        return;
+    }
 
     // 2. Bangun teks dasar
     let displayText = `Lokasi Anda : ${currentLat.toFixed(6)},${currentLon.toFixed(6)}`;
     displayText += `\nTingkat Akurasi : ${acc.toFixed(0)} Meter | > ${MAX_ACCURACY} Meter`;
 
-	// Baris Tambahan (Opsional): Animasi Akurasi
+    // Baris Tambahan (Opsional): Animasi Akurasi
     if (acc && acc > MAX_ACCURACY) {
         displayText += `\nSedang meningkatkan akurasi${".".repeat(accDots)}`;
     }
-	
+
     // 3. Logika Prioritas Tinggi (Status Absensi)
     if (status === "hadir" || status === "wfh") {
-        
+
         // JIKA LOKASI BEBAS: Langsung keluar dari fungsi (Sangat Cepat)
         if (namaLokasi === "-") {
             lastInsideArea = true;
@@ -911,7 +919,7 @@ function forceUpdateDistanceUI(lat, lon, acc) {
 
         // JIKA DATA TARGET BELUM ADA: Tampilkan loading dan langsung berhenti di sini
         const hasTargetData = targetLocation && targetLocation.lat && targetLocation.lat !== 0;
-        
+
         if (!hasTargetData) {
             lastInsideArea = false;
             displayText += `\nSedang menghitung jarak anda dengan titik koordinat absensi${".".repeat(accDots)}`;
@@ -955,7 +963,7 @@ async function refreshTargetLocation(callback) {
     // ===============================
     // 1. VALIDASI STATUS
     // ===============================
-    if (!currentStatus || currentStatus === "Pilih Status...") {
+    if (!currentStatus) {
         if (tampil) tampil.value = "⚠️ Status Absen belum dipilih.";
         isLoading = false;
         return;
@@ -1185,19 +1193,19 @@ function startGPSMonitoring(onReady) {
 
 // ====== EVENT LISTENER STATUS ======
 let isLoading = false; // Gembok global
+let loadDots = 0;  // Khusus untuk Loading Dots
 
-function updateLoadingDots(count) {
+function updateLoadingDots() {
     if (!isLoading) return; 
 
     const elNama = document.getElementById("titikKoordinatTampil");
     if (elNama) {
-        // Menggunakan array untuk menghindari kalkulasi berat saat UI sibuk
-        const dots = ["", ".", "..", "..."];
-        elNama.value = "Sedang update koordinat" + dots[count % 4];
+        // Pakai loadDots, jangan accDots!
+        loadDots = (loadDots + 1) % 4;
+        elNama.value = "Sedang update koordinat" + ".".repeat(loadDots);
     }
 
-    // Gunakan 600ms agar ritme sinkron dengan mata manusia
-    setTimeout(() => updateLoadingDots(count + 1), 600);
+    setTimeout(updateLoadingDots, 500);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
