@@ -1084,7 +1084,7 @@ async function refreshTargetLocation(callback) {
         isLoading = false;
 
         // langsung update UI (tanpa nunggu GPS)
-        forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy || 0);
+        forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
         return;
     }
 
@@ -1127,7 +1127,7 @@ async function refreshTargetLocation(callback) {
 
             // 🚀 UPDATE LANGSUNG TANPA DELAY
             if (gpsData[0] !== 0) {
-                forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy || 0);
+                forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
             }
 
         } else {
@@ -1136,7 +1136,7 @@ async function refreshTargetLocation(callback) {
             if (tampil) tampil.value = "-";
 
             // update juga biar UI tidak nunggu
-            forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy || 0);
+            forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
         }
 
     } catch (error) {
