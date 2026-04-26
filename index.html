@@ -981,9 +981,9 @@ function stopGPSLoading() {
 // FUNGSI HITUNG INSTAN (ANTI-DELAY)
 // =====================================================
 function forceUpdateDistanceUI(lat, lon, acc) {
-	acc = Number(acc) || 0;
-	lat = Number(lat) || 0;
-	lon = Number(lon) || 0;
+	//acc = Number(acc) || 0;
+	//lat = Number(lat) || 0;
+	//lon = Number(lon) || 0;
 
     // 1. Ambil input secepat mungkin
     const status = (document.getElementById("status")?.value || "").toLowerCase();
@@ -992,6 +992,7 @@ function forceUpdateDistanceUI(lat, lon, acc) {
 
     const currentLat = lat || gpsData[0];
     const currentLon = lon || gpsData[1];
+	const currentLon = acc || gpsData[2];
 
     // Jika GPS belum aktif, jangan proses apa pun
     // 🔥 VALIDASI LENGKAP
