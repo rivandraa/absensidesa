@@ -9,7 +9,7 @@
 (function() {
     // 1. DATA DASAR
     const ua = navigator.userAgent || "";
-    const REQUIRED_VERSION = "ABSENSI_BUMDESA_ANDROID_v1.3.1";
+    const REQUIRED_VERSION = "ABSENSI_PEMDES_ANDROID_v2.0.0";
     const match = ua.match(/APP_TOKEN=([^;]+)/);
     const token = match ? match[1] : null;
 
@@ -60,7 +60,7 @@
         isUpdating = true;
         if (countdownInterval) clearInterval(countdownInterval);
         document.body.style.pointerEvents = "none";
-        const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v1.3.1/Absensi.Bumdes.Galungan.v1.3.1.apk?t=" + new Date().getTime();
+        const apkUrl = "https://github.com/rivandraa/absensiku/releases/download/v2.0.0/Absensi.Pemdes.Galungan.v2.0.0.apk?t=" + new Date().getTime();
 
         if (window.UpdateBridge) {
             UpdateBridge.downloadUpdate(apkUrl);
@@ -244,9 +244,8 @@ document.addEventListener("DOMContentLoaded", function() {
 	<div id="LoginPage" style="display:none;">
 
     <!-- ========= Judul & Subjudul ========= -->
-    <div class="title">BUMDESA WANA AMERTHA</div>
-	<div class="title">DESA GALUNGAN</div>
-    <div class="subtitle">ABSENSI PEGAWAI</div>
+    <div class="title">PEMERINTAH DESA GALUNGAN</div>
+    <div class="subtitle">LOGIN LAYANAN ABSENSI</div>
 
     <!-- ========= Tanggal & Waktu Real-Time ========= -->
     <div id="tanggalWaktuLogin"></div>
@@ -272,6 +271,7 @@ document.addEventListener("DOMContentLoaded", function() {
             <input type="submit" value="LOGIN">
         </div>
     </form>
+
 </div>
 
 <!-- =========================================================================================================
@@ -280,8 +280,7 @@ document.addEventListener("DOMContentLoaded", function() {
 <div id="AbsensiPage" style="display:none;">
 
     <!-- ========= Judul & Subjudul ========= -->
-    <div class="title">BUMDESA WANA AMERTHA</div>
-	<div class="title">DESA GALUNGAN</div>
+    <div class="title">PEMERINTAH DESA GALUNGAN</div>
     <div class="subtitle">ABSENSI PEGAWAI</div>
     <div id="tanggalWaktuAbsen"></div>
 
@@ -302,11 +301,11 @@ document.addEventListener("DOMContentLoaded", function() {
             <label>📋 Status Absen</label>
             <select id="status" class="form-control">
                 <option value="" disabled selected hidden>Pilih Status Absen</option>
-                <option value="Hadir">Hadir - Kantor BUMDesa</option>
-				<option value="WAN">Hadir - WAN Mart</option>
+                <option value="Hadir">Hadir</option>
                 <option value="Izin">Izin</option>
                 <option value="Sakit">Sakit</option>
                 <option value="Dinas">Dinas</option>
+                <option value="WFH" disabled hidden>WFH</option>
             </select>
         </div>
 
@@ -407,7 +406,7 @@ document.addEventListener("DOMContentLoaded", function() {
             <input
                 type="button"
                 id="Notifikasi_AbsensiBtn"
-                onclick="window.open('https://t.me/+Y8AkaKjK5Kg2NDdl','_blank')" // alamat telegram
+                onclick="window.open('https://t.me/+cYMab7mf3Rk5ZTU1','_blank')"
                 value="NOTIFIKASI ABSENSI"
             >
         </div>
@@ -427,15 +426,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
     </form>
 </div>
-	
+
 <!-- Wadah Halaman Dinamis (Laporan / Pengaturan Password) -->
 <div id="InnerPage" style="display:none;"></div>
-	
+
 <footer class="footer">
-    © 2026 galungan.tech • webapp v1.1.1
+    © 2026 galungan.tech • v1.1.0
 </footer>
 </div>
-	
+
 <!-- JQuery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   
@@ -590,6 +589,7 @@ function showTempPopup(msg, type = "warning", duration = 1500) {
     }, duration);
 }
 
+
 /**
  * Fungsi Getar Pendek (warning / error)
  */
@@ -651,7 +651,7 @@ async function hashPassword(password) {
  * Proses login user
  */
 // Deklarasikan URL Web App GAS Anda di bagian paling atas skrip
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyOAYk00IBG019Pmxe4Pg93k0lUlEUL9htyW6AIocuM6UfPsxnFB6aFk58ojbP1hlSt/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxeeLLoLcCb194b3JJuJBX-2detUx02NTRn7s_3_FSKu4v1RyuRVD1dnuEIzcg9RGgB/exec";
 
 async function loginUser() {
     hideAlerts(); 
@@ -763,7 +763,7 @@ async function isGPSEnabledUniversal() {
 // =====================================================
 const useCamera = true;
 // =====================================================	
-	
+
 // =====================================================
 // GPS STATE
 // =====================================================
@@ -843,8 +843,6 @@ function resetGPSState() {
 // =====================================================
 // UI UPDATE & ANIMATION
 // =====================================================
-let dots = 0;
-	
 function updateGPSDisplay(text) {
     const gpsDiv = document.getElementById("gps");
     const gpsHidden = document.getElementById("gpsHidden");
@@ -857,11 +855,16 @@ function updateGPSDisplay(text) {
 
 function startGPSLoading() {
     animatingGPS = true;
+
+    const dotsArr = ["", ".", "..", "..."];
+    let i = 0;
+
     stopGPSLoading();
+
     gpsLoadingInterval = setInterval(() => {
-        dots = (dots + 1) % 4;
-        updateGPSDisplay("Sedang memperbarui lokasi" + ".".repeat(dots));
-    }, 500);
+        updateGPSDisplay("Sedang memperbarui lokasi" + dotsArr[i]);
+        i = (i + 1) % dotsArr.length;
+    }, 600);
 }
 
 function stopGPSLoading() {
@@ -897,7 +900,7 @@ function forceUpdateDistanceUI(lat, lon, acc) {
     }
 	
     // 3. Logika Prioritas Tinggi (Status Absensi)
-    if (status === "hadir" || status === "wan") {
+    if (status === "hadir" || status === "wfh") {
         
         // JIKA LOKASI BEBAS: Langsung keluar dari fungsi (Sangat Cepat)
         if (namaLokasi === "-") {
@@ -1436,17 +1439,18 @@ document.getElementById('snap').addEventListener('click', async () => {
     return;
   }
 
-  //  VALIDASI GPS & RADIUS
-  if ((gpsData[0] === 0 && gpsData[1] === 0) || animatingGPS || improvingAccuracy) {
-    showPopup("⚠️ GPS tidak aktif atau GPS Sedang memperbarui lokasi / meningkatkan akurasi.", "warning");
-    vibrateAlertShort();
-    isSnapping = false;
-    return;
-  }
+
+	//  VALIDASI GPS & RADIUS
+	if ((gpsData[0] === 0 && gpsData[1] === 0) || animatingGPS || improvingAccuracy) {
+		showPopup("⚠️ GPS tidak aktif atau GPS sedang mencari lokasi / meningkatkan akurasi.", "warning");
+    	vibrateAlertShort();
+    	isSnapping = false;
+    	return;
+  	}
 
 	// 📏 Validasi Radius & Kesiapan Data
 	const statusLower = status.toLowerCase();
-	if (statusLower === "hadir" || statusLower === "wan") {
+	if (statusLower === "hadir" || statusLower === "wfh" || statusLower === "wfh") {
 	    
 	    // 1. Ambil Nama Lokasi
 	    const elNama = document.getElementById("titikKoordinatTampil");
@@ -1725,7 +1729,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 video.srcObject.getTracks().forEach(track => track.stop());
                 video.srcObject = null;
             }
-        } else if (status === "Hadir" || status === "Dinas" || status === "WAN") {
+        } else if (status === "Hadir" || status === "Dinas" || status === "WFH") {
             // 1. Tampilkan kembali (Gunakan "" agar layout tetap rapi/sejajar kiri)
             koordinatSection.style.display = ""; 
             gpsSection.style.display = "";
@@ -1735,10 +1739,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 2. Reset tampilan ke state "Loading"
             // Untuk Input menggunakan .value
-            //if (inputKoordinat) inputKoordinat.value = "";
+            //if (inputKoordinat) inputKoordinat.value = "Sedang mengambil data...";
             
             // Untuk elemen display (div/span) menggunakan .innerText
-            //if (displayGps) displayGps.innerText = "Sedang memperbarui lokasi...";
+            //if (displayGps) displayGps.innerText = "Sedang mencari lokasi...";
         }
     }
 
@@ -1795,6 +1799,7 @@ async function submitAbsensiForm() {
     if (!statusRaw) {
         showPopup("Silakan pilih status terlebih dahulu!", "warning");
         vibrateAlertShort();
+        document.getElementById('status').focus();
         isSubmitting = false;
         return;
     }
@@ -1804,12 +1809,13 @@ async function submitAbsensiForm() {
     if (ketWajib && !keterangan) {
         showPopup("Keterangan wajib diisi untuk status " + statusRaw + "!", "warning");
         vibrateAlertShort();
+        document.getElementById('keterangan').focus();
         isSubmitting = false;
         return;
     }
 
     // 📸 Validasi Foto
-    const wajibFoto = ["hadir", "dinas", "wan"].includes(status);
+    const wajibFoto = ["hadir", "dinas", "wfh"].includes(status);
     if (useCamera && wajibFoto && !fotoData) {
         showPopup("Foto Kehadiran wajib untuk status " + statusRaw + "!", "warning");
         vibrateAlertShort();
@@ -1833,14 +1839,14 @@ async function submitAbsensiForm() {
 
 	//  VALIDASI GPS & RADIUS
 	if ((gpsData[0] === 0 && gpsData[1] === 0) || animatingGPS || improvingAccuracy) {
-		showPopup("⚠️ GPS tidak aktif atau GPS Sedang memperbarui lokasi / meningkatkan akurasi.", "warning");
+		showPopup("⚠️ GPS tidak aktif atau GPS sedang mencari lokasi / meningkatkan akurasi.", "warning");
     	vibrateAlertShort();
     	isSubmitting = false;
     	return;
   	}
 
 	// 📏 Validasi Radius & Kesiapan Data
-	if (status === "hadir" || status === "wan") {
+	if (status === "hadir" || status === "wfh") {
 	    
 	    // 1. Ambil Nama Lokasi
 	    const elNama = document.getElementById("titikKoordinatTampil");
@@ -1930,8 +1936,8 @@ async function submitAbsensiForm() {
 		        Terima kasih, selamat menjalankan tugas.`;
 		    } 
 		    
-		    else if (status === "WAN") {
-		        pesan = `✅ Absensi Kehadiran Berhasil<br>
+		    else if (status === "WFH") {
+		        pesan = `✅ Absensi WFH Berhasil<br>
 		        Pegawai: <b>${res.nama}</b><br>
 		        🕒 Waktu: <b>${waktuID}</b><br>
 		        Tetap semangat bekerja dari rumah.`;
@@ -2044,143 +2050,161 @@ function formatIndonesia(waktuString) {
 // ================================
 let isshowLaporan = false;
 
+/**
+ * Tampilkan halaman Laporan Absensi
+ */
 async function showLaporan_Absensi() {
     if (isshowLaporan) {
         showTempPopup("⏳ Sedang memuat halaman, harap tunggu...", "warning");
         return;
     }
     isshowLaporan = true;
-
+	
     sessionStorage.setItem('page', 'Laporan_Absensi');
+    //if (typeof resetFoto === "function") resetFoto();
 
-    // TABEL INI LANGSUNG MUNCUL (LOKAL)
-    const html = `
-        <div>
-            <div class="mb-4 text-center">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <button id="homeBtn" class="btn btn-sm btn-danger">HOME</button>
-                    <select id="selectBulan" class="form-select form-select-sm w-auto shadow-sm" style="border: 2px solid #ced4da;">
-                        <option value="JANUARI">Januari</option>
-                        <option value="FEBRUARI">Februari</option>
-                        <option value="MARET">Maret</option>
-                        <option value="APRIL">April</option>
-                        <option value="MEI">Mei</option>
-                        <option value="JUNI">Juni</option>
-                        <option value="JULI">Juli</option>
-                        <option value="AGUSTUS">Agustus</option>
-                        <option value="SEPTEMBER">September</option>
-                        <option value="OKTOBER">Oktober</option>
-                        <option value="NOVEMBER">November</option>
-                        <option value="DESEMBER">Desember</option>
-                    </select>
-                </div>
-                <h6 id="kopLaporan" class="fw-bold mb-0 text-uppercase">LAPORAN ABSENSI</h6>
-            </div>
+    //showPopup("Memuat halaman Laporan Absensi...", "loading");
 
-            <div class="table-responsive">
-                <table id="Laporan-Absensi-Table" class="table table-sm table-bordered table-striped" style="font-size: 11px;">
-                    <thead class="table-dark text-center">
-                        <tr>
+    try {
+        // Kerangka HTML Laporan (Sesuai aslinya, tapi dipindah ke sini)
+		const html = `
+		    <div class="mt-3">
+		        
+		        <div class="mb-4 text-center">
+		            
+		            <div class="mb-3">
+		                <button id="homeBtn" class="btn btn-sm btn-danger px-4 shadow-sm">
+		                    HOME
+		                </button>
+		            </div>
+		
+		            <h6 id="kopLaporan" class="fw-bold mb-0 text-uppercase w-100 p-1" style="letter-spacing: 1px;">
+		                LAPORAN ABSENSI
+		            </h6>
+		
+		        </div>
+		
+		        <div class="table-responsive">
+		            <table id="Laporan-Absensi-Table" class="table table-sm table-bordered table-striped shadow-sm" style="font-size: 11px;">
+		                <thead class="table-dark text-center">
                             <th>NO</th>
                             <th>NAMA PEGAWAI</th>
                             <th>JABATAN</th>
-                            <th>Hadir</th>
-                            <th>Izin</th>
-                            <th>Sakit</th>
-                            <th>Dinas</th>
+                            <th>HADIR</th>
+                            <th>IJIN</th>
+                            <th>SAKIT</th>
+                            <th>DINAS</th>
+							<th>TK</th>
                         </tr>
-                    </thead>
-                    <tbody id="laporanBody" class="text-center">
-                        <tr><td colspan="7" class="p-4"></td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
+		                </thead>
+		                <tbody class="text-center">
+		                </tbody>
+		            </table>
+		        </div>
+		    </div>
+		`;
 
-    $('#InnerPage').html(html).show();
-    $('#AbsensiPage').hide();
+        // Tampilkan kerangka
+        $('#InnerPage').html(html).show();
+        $('#AbsensiPage').hide();
 
-    // Set bulan sekarang
-    const bulanList = ["JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
-    const bulanSekarang = bulanList[new Date().getMonth()];
-    $("#selectBulan").val(bulanSekarang);
+        // Event Tombol Tutup
+		$("#InnerPage").off("click", "#homeBtn").on("click", "#homeBtn", closeLaporan_Absensi);
 
-    // Event listeners
-    $("#InnerPage").off("change", "#selectBulan").on("change", "#selectBulan", function () {
-        loadLaporan_Absensi($(this).val());
-    });
-    $("#InnerPage").off("click", "#homeBtn").on("click", "#homeBtn", closeLaporan_Absensi);
+        // Load Data
+        await loadLaporan_Absensi();
 
-    // PASTI KAN RENDER SELESAI BARU AMBIL DATA
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            loadLaporan_Absensi(bulanSekarang);
-            isshowLaporan = false;
-        });
-    });
+	} catch (err) {
+        showPopup("Gagal memuat laporan", "error");
+    } finally {
+        isshowLaporan = false;
+    }
 }
 
-// ================================
-// Load Data (Ambil ISI dari Server)
-// ================================
+/**
+ * Ambil data dari GAS dan render ke tabel
+ */
 let isLoadingLaporan = false;
 
-async function loadLaporan_Absensi(bulan) {
+async function loadLaporan_Absensi() {
     if (isLoadingLaporan) return;
     isLoadingLaporan = true;
 
-    const tbody = $("#laporanBody");
-
+    const tbody = $("#InnerPage").find("#Laporan-Absensi-Table tbody");
+    const thead = $("#InnerPage").find("#Laporan-Absensi-Table thead");
+    
     // TAMPILKAN LOADING DI DALAM BODY TABEL YANG SUDAH ADA
     tbody.html(`
         <tr>
-            <td colspan="7" class="p-4 text-muted">
+            <td colspan="8" class="p-4 text-muted">
                 <div class="spinner-border spinner-border-sm mb-1"></div><br>
-                ⏳ Sedang mengambil Laporan Bulan ${bulan}
+                ⏳ Sedang mengambil data Laporan Absensi
             </td>
         </tr>
     `);
 
-    try {
-        const spreadsheetId = userData?.spreadsheetId;
-        const res = await fetch(`${GAS_URL}?action=getLaporan_Absensi&spreadsheetId=${spreadsheetId}&namaBulan=${bulan}`)
-                           .then(r => r.json());
+    const spreadsheetId = userData && userData.spreadsheetId ? userData.spreadsheetId : null;
 
-        if (res.status === "success") {
-            // Update Kop jika ada data khusus dari server
-            if(res.kop) $("#kopLaporan").html(res.kop);
+    if (!spreadsheetId) {
+        showPopup("Sesi berakhir, silakan login ulang", "error");
+        tbody.html('<tr><td colspan="8">User belum login.</td></tr>');
+        return;
+    }
+
+    try {
+        // 🔥 Ganti google.script.run menjadi fetch GET
+        const response = await fetch(`${GAS_URL}?action=getLaporan_Absensi&spreadsheetId=${spreadsheetId}`);
+        const res = await response.json();
+		
+        if (res) {
+            //showPopup("Data berhasil dimuat", "success", 1000);
             
-            // Masukkan data baris
+            // 1. Render Kop
+			$("#kopLaporan").html(`
+			    LAPORAN ABSENSI<br>
+			    ${res.kop || ""}
+			`);
+
+            // 2. Render Header
+            let theadHtml = "<tr>";
+            res.header.forEach(h => {
+                theadHtml += `<th class="align-middle">${h}</th>`;
+            });
+            theadHtml += "</tr>";
+            thead.html(theadHtml);
+
+            // 3. Render Baris Data
+            let tbodyHtml = "";
             if (res.rows && res.rows.length > 0) {
-                const rows = res.rows.map(r => `
-                    <tr>
-                        <td>${r.no}</td>
-                        <td class="text-start">${r.nama}</td>
-                        <td class="text-start">${r.jabatan}</td>
-                        <td class="text-success fw-bold">${r.hadir}</td>
-                        <td class="text-warning">${r.izin}</td>
-                        <td class="text-danger">${r.sakit}</td>
-                        <td class="text-info">${r.dinas}</td>
-                    </tr>
-                `).join('');
-                tbody.html(rows);
+                res.rows.forEach(r => {
+                    tbodyHtml += `
+                        <tr>
+                            <td>${r.no}</td>
+                            <td class="text-start">${r.nama}</td>
+                            <td class="text-start">${r.jabatan}</td>
+                            <td class="fw-bold text-success">${r.hadir}</td>
+                            <td class="text-warning">${r.izin}</td>
+                            <td class="text-danger">${r.sakit}</td>
+                            <td class="text-info">${r.dinas}</td>
+                            <td class="bg-light">${r.tanpaKeterangan}</td>
+                        </tr>`;
+                });
             } else {
-                tbody.html(`<tr><td colspan="7" class="p-4">Data tidak ditemukan</td></tr>`);
+                tbodyHtml = '<tr><td colspan="8">Tidak ada data.</td></tr>';
             }
-        } else {
-            tbody.html(`<tr><td colspan="7" class="p-4 text-danger">${res.message}</td></tr>`);
+            tbody.html(tbodyHtml);
         }
     } catch (err) {
-        tbody.html(`<tr><td colspan="7" class="p-4 text-danger">Gagal memuat data</td></tr>`);
-    } finally {
-        isLoadingLaporan = false;
-    }
+        showPopup("Gagal mengambil data dari server", "error");
+        tbody.html('<tr><td colspan="8">Koneksi bermasalah.</td></tr>');
+	} finally {
+		isLoadingLaporan = false;
+	}
 }
 
-// ================================
-// Tutup Halaman
-// ================================
+/**
+ * Tutup halaman Laporan
+ */
 function closeLaporan_Absensi() {
 	isshowLaporan = false;
     isLoadingLaporan = false;
@@ -2244,7 +2268,7 @@ function openPengaturanPasswordForm() {
 
     // Kerangka HTML Form (Dipindah ke Frontend)
     const html = `
-        <div mt-3">
+        <div class="mt-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="fw-bold mb-0">🔑 Ubah Password</h5>
                 <button type="button" class="btn btn-sm btn-secondary" onclick="closePengaturanPasswordForm()">
@@ -2497,7 +2521,7 @@ $(document).ready(function() {
         // ========= // Tidak Ada Sesi Tersimpan ==========
         $('#LoginPage').show(); 
         $('#AbsensiPage').hide(); 
-        $('#InnerPage').hide();
+        $('#InnerPage').hide(); 
         hideAlerts();
     }
 });
