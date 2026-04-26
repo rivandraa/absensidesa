@@ -985,18 +985,20 @@ function stopGPSLoading() {
 // FUNGSI HITUNG INSTAN (ANTI-DELAY)
 // =====================================================
 function forceUpdateDistanceUI(lat, lon, acc) {
-	acc = Number(acc) || 0;
-	lat = Number(lat) || 0;
-	lon = Number(lon) || 0;
+
+    lat = Number(lat ?? gpsData?.[0] ?? 0);
+    lon = Number(lon ?? gpsData?.[1] ?? 0);
+
+    acc = Number(acc ?? gpsAccuracy ?? 0);
+    if (isNaN(acc)) acc = 0;
 
     // 1. Ambil input secepat mungkin
     const status = (document.getElementById("status")?.value || "").toLowerCase();
     const elNama = document.getElementById("titikKoordinatTampil");
     const namaLokasi = elNama?.value || "Area Absensi";
 
-    const currentLat = lat || gpsData[0];
-    const currentLon = lon || gpsData[1];
-	const currentacc = gpsAccuracy || 0;
+    const currentLat = lat;
+    const currentLon = lon;
 
     // Jika GPS belum aktif, jangan proses apa pun
     // 🔥 VALIDASI LENGKAP
