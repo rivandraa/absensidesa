@@ -1003,7 +1003,7 @@ function forceUpdateDistanceUI(lat, lon, acc) {
 
     // 2. Bangun teks dasar
     let displayText = `Lokasi Anda : ${currentLat.toFixed(6)},${currentLon.toFixed(6)}`;
-    displayText += `\nTingkat Akurasi : ${acc.toFixed(0)} Meter | > ${MAX_ACCURACY} Meter`;
+    displayText += `\nTingkat Akurasi : ${(acc).toFixed(0)} Meter | > ${MAX_ACCURACY} Meter`;
 	
     // Baris Tambahan (Opsional): Animasi Akurasi
     if (acc && acc > MAX_ACCURACY) {
