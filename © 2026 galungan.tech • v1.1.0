@@ -784,7 +784,6 @@ let lastTargetLocation = null;
 let areaErrorActive = false;
 let lastInsideArea = null;
 let fetchRequestId = 0;
-let gpsAccuracy = 0;
 
 let targetLocation = null;
 let gpsSystemActive = false;
@@ -844,8 +843,6 @@ function resetGPSState() {
 // =====================================================
 // UI UPDATE & ANIMATION
 // =====================================================
-let dots = 0;
-
 function updateGPSDisplay(text) {
     const gpsDiv = document.getElementById("gps");
     const gpsHidden = document.getElementById("gpsHidden");
@@ -858,11 +855,16 @@ function updateGPSDisplay(text) {
 
 function startGPSLoading() {
     animatingGPS = true;
+
+    const dotsArr = ["", ".", "..", "..."];
+    let i = 0;
+
     stopGPSLoading();
+
     gpsLoadingInterval = setInterval(() => {
-        dots = (dots + 1) % 4;
-        updateGPSDisplay("Sedang memperbarui lokasi" + ".".repeat(dots));
-    }, 500);
+        updateGPSDisplay("Sedang memperbarui lokasi" + dotsArr[i]);
+        i = (i + 1) % dotsArr.length;
+    }, 600);
 }
 
 function stopGPSLoading() {
@@ -877,10 +879,6 @@ function stopGPSLoading() {
 // FUNGSI HITUNG INSTAN (ANTI-DELAY)
 // =====================================================
 function forceUpdateDistanceUI(lat, lon, acc) {
-	acc = Number(acc) || 0;
-	lat = Number(lat) || 0;
-	lon = Number(lon) || 0;
-
     // 1. Ambil input secepat mungkin
     const status = (document.getElementById("status")?.value || "").toLowerCase();
     const elNama = document.getElementById("titikKoordinatTampil");
@@ -890,23 +888,19 @@ function forceUpdateDistanceUI(lat, lon, acc) {
     const currentLon = lon || gpsData[1];
 
     // Jika GPS belum aktif, jangan proses apa pun
-    // 🔥 VALIDASI LENGKAP
-    if (!currentLat || !currentLon || currentLat === 0 || currentLon === 0) {
-        updateGPSDisplay("📡 Menunggu sinyal GPS...");
-        return;
-    }
+    if (!currentLat || currentLat === 0) return;
 
     // 2. Bangun teks dasar
     let displayText = `Lokasi Anda : ${currentLat.toFixed(6)},${currentLon.toFixed(6)}`;
-    displayText += `\nTingkat Akurasi : ${(acc || 0).toFixed(0)} Meter | > ${MAX_ACCURACY} Meter`;
-	
-    // Baris Tambahan (Opsional): Animasi Akurasi
+    displayText += `\nTingkat Akurasi : ${acc.toFixed(0)} Meter | > ${MAX_ACCURACY} Meter`;
+
+	// Baris Tambahan (Opsional): Animasi Akurasi
     if (acc && acc > MAX_ACCURACY) {
         displayText += `\nSedang meningkatkan akurasi${".".repeat(accDots)}`;
     }
 	
     // 3. Logika Prioritas Tinggi (Status Absensi)
-    if (status === "hadir" || status === "pulang" || status === "wfh") {
+    if (status === "hadir" || status === "wfh") {
         
         // JIKA LOKASI BEBAS: Langsung keluar dari fungsi (Sangat Cepat)
         if (namaLokasi === "-") {
@@ -961,7 +955,7 @@ async function refreshTargetLocation(callback) {
     // ===============================
     // 1. VALIDASI STATUS
     // ===============================
-    if (!currentStatus) {
+    if (!currentStatus || currentStatus === "Pilih Status...") {
         if (tampil) tampil.value = "⚠️ Status Absen belum dipilih.";
         isLoading = false;
         return;
@@ -979,7 +973,7 @@ async function refreshTargetLocation(callback) {
         isLoading = false;
 
         // langsung update UI (tanpa nunggu GPS)
-        forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy || 0);
+        forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
         return;
     }
 
@@ -1022,7 +1016,7 @@ async function refreshTargetLocation(callback) {
 
             // 🚀 UPDATE LANGSUNG TANPA DELAY
             if (gpsData[0] !== 0) {
-                forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy || 0);
+                forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
             }
 
         } else {
@@ -1031,7 +1025,7 @@ async function refreshTargetLocation(callback) {
             if (tampil) tampil.value = "-";
 
             // update juga biar UI tidak nunggu
-            forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy || 0);
+            forceUpdateDistanceUI(gpsData[0], gpsData[1], gpsAccuracy);
         }
 
     } catch (error) {
@@ -1125,7 +1119,6 @@ function startGPSMonitoring(onReady) {
                 const lat = pos.coords.latitude;
                 const lon = pos.coords.longitude;
                 const acc = pos.coords.accuracy;
-				gpsAccuracy = acc; // 🔥 simpan ke global
 
                 stopGPSLoading();
 
@@ -1192,19 +1185,19 @@ function startGPSMonitoring(onReady) {
 
 // ====== EVENT LISTENER STATUS ======
 let isLoading = false; // Gembok global
-let loadDots = 0;  // Khusus untuk Loading Dots
 
-function updateLoadingDots() {
+function updateLoadingDots(count) {
     if (!isLoading) return; 
 
     const elNama = document.getElementById("titikKoordinatTampil");
     if (elNama) {
-        // Pakai loadDots, jangan accDots!
-        loadDots = (loadDots + 1) % 4;
-        elNama.value = "Sedang update koordinat" + ".".repeat(loadDots);
+        // Menggunakan array untuk menghindari kalkulasi berat saat UI sibuk
+        const dots = ["", ".", "..", "..."];
+        elNama.value = "Sedang update koordinat" + dots[count % 4];
     }
 
-    setTimeout(updateLoadingDots, 500);
+    // Gunakan 600ms agar ritme sinkron dengan mata manusia
+    setTimeout(() => updateLoadingDots(count + 1), 600);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -1894,87 +1887,95 @@ async function submitAbsensiForm() {
 	    // Jika namaLokasi === "-", maka otomatis lolos ke proses submit berikutnya
 	}
 
-	// ======================================
-	// PERSIAPAN DATA UNTUK DIKIRIM
-	// ======================================
-	const payload = {
-	    action: "submitAbsensi",
-	    nama: val[0],
-	    jabatan: val[1],
-	    status: statusRaw,
-	    keterangan: keterangan,
-	    statusPegawai: userData.statusPegawai,
-	    spreadsheetId: userData.spreadsheetId,
-	    folderId: userData.folderId
-	};
-	
-	if (!["izin", "sakit"].includes(status)) {
-	    payload.foto = fotoData;
-	    payload.gps = gpsFinal;
-	}
-	
-	// Kunci UI
-	document.getElementById('snap').disabled = true;
-	document.getElementById('reset').disabled = true;
-	showPopup("Memproses absensi...", "loading");
-	
-	try {
-	    const response = await fetch(GAS_URL, {
-	        method: "POST",
-	        body: JSON.stringify(payload)
-	    });
-	
-	    const res = await response.json();
-	
-	    // Buka Kunci UI
-	    document.getElementById('snap').disabled = false;
-	    document.getElementById('reset').disabled = false;
-	    isSubmitting = false;
-	
+    // ======================================
+    // PERSIAPAN DATA UNTUK DIKIRIM
+    // ======================================
+    const payload = {
+        action: "submitAbsensi", // Memberitahu GAS action apa yang dijalankan
+        nama: val[0],
+        jabatan: val[1],
+        status: statusRaw,
+        keterangan: keterangan,
+        statusPegawai: userData.statusPegawai,
+        spreadsheetId: userData.spreadsheetId,
+        folderId: userData.folderId
+    };
+
+    if (!["izin", "sakit"].includes(status)) {
+        payload.foto = fotoData; // Ini berisi {base64, name, type, dll}
+        payload.gps = gpsFinal;
+    }
+
+    // Kunci UI
+    document.getElementById('snap').disabled = true;
+    document.getElementById('reset').disabled = true;
+    showPopup("Memproses absensi...", "loading");
+
+    try {
+        // 🔥 KIRIM DATA KE GAS MENGGUNAKAN FETCH (POST)
+        const response = await fetch(GAS_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+
+        // Buka Kunci UI
+        document.getElementById('snap').disabled = false;
+        document.getElementById('reset').disabled = false;
+        isSubmitting = false;
+
 	    // ===============================
 	    // 🔥 NORMALISASI STATUS (FIX UTAMA)
 	    // ===============================
 	    const cleanStatus = (statusRaw || "").trim().toLowerCase();
-	
+
 	    console.log("DEBUG status:", cleanStatus);
-	
+
 	    if (res.status === "berhasil") {
 	        const waktuID = formatIndonesia(res.waktu);
 	        let pesan = "";
-	
+
 	        if (cleanStatus === "hadir") {
 	            pesan = `✅ Absensi Kehadiran Berhasil<br>
 	            Pegawai: <b>${res.nama}</b><br>
 	            🕒 Waktu: <b>${waktuID}</b><br>
 	            Terima kasih, selamat menjalankan tugas.`;
 	        } 
-	
+
 	        else if (cleanStatus === "wan") {
 	            pesan = `✅ Absensi Kehadiran Berhasil<br>
 	            Pegawai: <b>${res.nama}</b><br>
 	            🕒 Waktu: <b>${waktuID}</b><br>
 	            Tetap semangat bekerja dari rumah.`;
 	        } 
-	
+
 	        else if (cleanStatus === "izin") {
 	            pesan = `✅ Pengajuan Izin Berhasil<br>
 	            Pegawai: <b>${res.nama}</b><br>
 	            🕒 Waktu: <b>${waktuID}</b><br>
 	            Permohonan izin telah dicatat.`;
 	        } 
-	
+
 	        else if (cleanStatus === "sakit") {
 	            pesan = `✅ Laporan Sakit Berhasil<br>
 	            Pegawai: <b>${res.nama}</b><br>
 	            🕒 Waktu: <b>${waktuID}</b><br>
 	            Semoga lekas pulih.`;
 	        } 
-	
+
 	        else if (cleanStatus === "dinas") {
 	            pesan = `✅ Absensi Dinas Berhasil<br>
 	            Pegawai: <b>${res.nama}</b><br>
 	            🕒 Waktu: <b>${waktuID}</b><br>
 	            Selamat menjalankan tugas dinas.`;
+	        } 
+
+	        else if (cleanStatus === "pulang") {
+	            pesan = `✅ Absensi Pulang Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Semoga selamat sampai di rumah.`;
 	        } 
 	
 	        else {
@@ -1982,44 +1983,43 @@ async function submitAbsensiForm() {
 	            Pegawai: <b>${res.nama}</b><br>
 	            🕒 Waktu: <b>${waktuID}</b>`;
 	        }
-	
+
 	        showPopup(pesan, "success", 6000);
 	        vibrateAlertLong();
-	
+
 	        // Reset Form
 	        $('#status').val('');
 	        $('#keterangan').val('');
 	        fotoData = null;
 	        resetFoto();
-	        updateStatusOptions();
-	
+
 	    } else if (res.status === "sudah_absen") {
 	        const waktuID = formatIndonesia(res.waktu);
-	
+
 	        showPopup(
 	            `⚠️ Absensi sudah tercatat hari ini<br>
 	            🕒 Waktu terakhir: <b>${waktuID}</b>`,
 	            "warning",
 	            6000
 	        );
-	
+
 	        vibrateAlertLong();
-	
+
 	    } else {
 	        throw new Error(res.message || "Gagal menyimpan");
 	    }
-	
+
 	} catch (err) {
 	    document.getElementById('snap').disabled = false;
 	    document.getElementById('reset').disabled = false;
 	    isSubmitting = false;
-	
+
 	    showPopup(
 	        `❌ Terjadi kesalahan saat mengirim data<br>
 	        <small>${err.message}</small>`,
 	        "error"
 	    );
-	
+
 	    vibrateAlertLong();
 	}
 }
