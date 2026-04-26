@@ -1992,7 +1992,6 @@ async function submitAbsensiForm() {
 	        $('#keterangan').val('');
 	        fotoData = null;
 	        resetFoto();
-	        updateStatusOptions();
 
 	    } else if (res.status === "sudah_absen") {
 	        const waktuID = formatIndonesia(res.waktu);
