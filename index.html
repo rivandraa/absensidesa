@@ -1925,87 +1925,104 @@ async function submitAbsensiForm() {
         document.getElementById('reset').disabled = false;
         isSubmitting = false;
 
-		if (res.status === "berhasil") {
-		    const waktuID = formatIndonesia(res.waktu);
-		    let pesan = "";
-		
-		    if (status === "Hadir") {
-		        pesan = `✅ Absensi Kehadiran Berhasil<br>
-		        Pegawai: <b>${res.nama}</b><br>
-		        🕒 Waktu: <b>${waktuID}</b><br>
-		        Terima kasih, selamat menjalankan tugas.`;
-		    } 
-		    
-		    else if (status === "WFH") {
-		        pesan = `✅ Absensi WFH Berhasil<br>
-		        Pegawai: <b>${res.nama}</b><br>
-		        🕒 Waktu: <b>${waktuID}</b><br>
-		        Tetap semangat bekerja dari rumah.`;
-		    } 
-		    
-		    else if (status === "Izin") {
-		        pesan = `✅ Pengajuan Izin Berhasil<br>
-		        Pegawai: <b>${res.nama}</b><br>
-		        🕒 Waktu: <b>${waktuID}</b><br>
-		        Permohonan izin telah dicatat.`;
-		    } 
-		    
-		    else if (status === "Sakit") {
-		        pesan = `✅ Laporan Sakit Berhasil<br>
-		        Pegawai: <b>${res.nama}</b><br>
-		        🕒 Waktu: <b>${waktuID}</b><br>
-		        Semoga lekas pulih.`;
-		    }
-				
-			else if (status === "Dinas") {
-		    pesan = `✅ Absensi Dinas Berhasil<br>
-		    Pegawai: <b>${res.nama}</b><br>
-		    🕒 Waktu: <b>${waktuID}</b><br>
-		    Selamat menjalankan tugas dinas.`;
-			}
-		    
-		    else {
-		        // fallback kalau status tidak terdeteksi
-		        pesan = `✅ Absensi berhasil!<br>
-		        Pegawai: <b>${res.nama}</b><br>
-		        🕒 Waktu: <b>${waktuID}</b>`;
-		    }
-		
-		    showPopup(pesan, "success", 6000);
-		    vibrateAlertLong();
-		    
-		    // Reset Form
-		    $('#status').val('');
-		    $('#keterangan').val('');
-		    fotoData = null;
-		    resetFoto();
-		
-		} else if (res.status === "sudah_absen") {
-		    const waktuID = formatIndonesia(res.waktu);
-		    showPopup(
-		        `⚠️ Absensi sudah tercatat hari ini<br>
-		        🕒 Waktu terakhir: <b>${waktuID}</b>`,
-		        "warning", 6000
-		    );
-		    vibrateAlertLong();
-		
-		} else {
-		    throw new Error(res.message || "Gagal menyimpan");
-		}
-		
-		} catch (err) {
-		    document.getElementById('snap').disabled = false;
-		    document.getElementById('reset').disabled = false;
-		    isSubmitting = false;
-		
-		    showPopup(
-		        `❌ Terjadi kesalahan saat mengirim data<br>
-		        <small>${err.message}</small>`,
-		        "error"
-		    );
-		    
-		    vibrateAlertLong();
-		}
+	    // ===============================
+	    // 🔥 NORMALISASI STATUS (FIX UTAMA)
+	    // ===============================
+	    const cleanStatus = (statusRaw || "").trim().toLowerCase();
+
+	    console.log("DEBUG status:", cleanStatus);
+
+	    if (res.status === "berhasil") {
+	        const waktuID = formatIndonesia(res.waktu);
+	        let pesan = "";
+
+	        if (cleanStatus === "hadir") {
+	            pesan = `✅ Absensi Kehadiran Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Terima kasih, selamat menjalankan tugas.`;
+	        } 
+
+	        else if (cleanStatus === "wan") {
+	            pesan = `✅ Absensi Kehadiran Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Tetap semangat bekerja dari rumah.`;
+	        } 
+
+	        else if (cleanStatus === "izin") {
+	            pesan = `✅ Pengajuan Izin Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Permohonan izin telah dicatat.`;
+	        } 
+
+	        else if (cleanStatus === "sakit") {
+	            pesan = `✅ Laporan Sakit Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Semoga lekas pulih.`;
+	        } 
+
+	        else if (cleanStatus === "dinas") {
+	            pesan = `✅ Absensi Dinas Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Selamat menjalankan tugas dinas.`;
+	        } 
+
+	        else if (cleanStatus === "pulang") {
+	            pesan = `✅ Absensi Pulang Berhasil<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b><br>
+	            Semoga selamat sampai di rumah.`;
+	        } 
+	
+	        else {
+	            pesan = `✅ Absensi berhasil!<br>
+	            Pegawai: <b>${res.nama}</b><br>
+	            🕒 Waktu: <b>${waktuID}</b>`;
+	        }
+
+	        showPopup(pesan, "success", 6000);
+	        vibrateAlertLong();
+
+	        // Reset Form
+	        $('#status').val('');
+	        $('#keterangan').val('');
+	        fotoData = null;
+	        resetFoto();
+	        updateStatusOptions();
+
+	    } else if (res.status === "sudah_absen") {
+	        const waktuID = formatIndonesia(res.waktu);
+
+	        showPopup(
+	            `⚠️ Absensi sudah tercatat hari ini<br>
+	            🕒 Waktu terakhir: <b>${waktuID}</b>`,
+	            "warning",
+	            6000
+	        );
+
+	        vibrateAlertLong();
+
+	    } else {
+	        throw new Error(res.message || "Gagal menyimpan");
+	    }
+
+	} catch (err) {
+	    document.getElementById('snap').disabled = false;
+	    document.getElementById('reset').disabled = false;
+	    isSubmitting = false;
+
+	    showPopup(
+	        `❌ Terjadi kesalahan saat mengirim data<br>
+	        <small>${err.message}</small>`,
+	        "error"
+	    );
+
+	    vibrateAlertLong();
+	}
 }
 
 // =========================================================================================================
